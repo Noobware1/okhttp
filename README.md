@@ -1,39 +1,92 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+OkHttp
+======
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+HTTP is the way modern applications network. It’s how we exchange data & media. Doing HTTP
+efficiently makes your stuff load faster and saves bandwidth.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+OkHttp is an HTTP client that’s efficient by default:
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+ * HTTP/2 support allows all requests to the same host to share a socket.
+ * Connection pooling reduces request latency (if HTTP/2 isn’t available).
+ * Transparent GZIP shrinks download sizes.
+ * Response caching avoids the network completely for repeat requests.
 
-## Features
+OkHttp perseveres when the network is troublesome: it will silently recover from common connection
+problems. If your service has multiple IP addresses, OkHttp will attempt alternate addresses if the
+first connect fails. This is necessary for IPv4+IPv6 and services hosted in redundant data
+centers. OkHttp supports modern TLS features (TLS 1.3, ALPN, certificate pinning). It can be
+configured to fall back for broad connectivity.
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+Using OkHttp is easy. Its request/response API is designed with fluent builders and immutability. It
+supports both synchronous blocking calls and async calls with callbacks.
 
-## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+Get a URL
+---------
 
 ```dart
-const like = 'sample';
+import 'package:ok_http/client.dart';
+import 'package:ok_http/request.dart';
+
+OkHttpClient client = OkHttpClient();
+
+Future<String> run(String url) {
+  Request request = Request(url: url);
+
+  final response = client
+      .newCall(request)
+      .execute()
+      .then((value) => value.text)
+      .catchError((e, s) => 'Error: $e, StackTrace: $s');
+
+  return response;
+}
 ```
 
-## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+Post to a Server
+----------------
+
+```dart
+import 'package:ok_http/client.dart';
+import 'package:ok_http/media_type.dart';
+import 'package:ok_http/request.dart';
+import 'package:ok_http/request_body.dart';
+
+final MediaType JSON = MediaType.parse("application/json");
+
+OkHttpClient client = OkHttpClient();
+
+Future<String> post(String url, String json) {
+  RequestBody body = RequestBody.fromString(json, JSON);
+  Request request = Request(url: url, method: 'POST')..body = body;
+
+  final response = client
+      .newCall(request)
+      .execute()
+      .then((value) => value.text)
+      .catchError((e, s) => 'Error: $e, StackTrace: $s');
+
+  return response;
+}
+
+```
+
+License
+-------
+
+```
+Copyright 2019 Square, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
