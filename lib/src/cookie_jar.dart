@@ -1,4 +1,4 @@
-import 'package:ok_http/src/cookie.dart';
+import 'package:okhttp/src/cookie.dart';
 
 /// Provides **policy** and **persistence** for HTTP cookies.
 ///

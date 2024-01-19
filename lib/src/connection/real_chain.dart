@@ -1,29 +1,31 @@
-import 'package:ok_http/src/interceptor.dart';
-import 'package:ok_http/src/request.dart';
-import 'package:ok_http/src/response.dart';
-import 'package:ok_http/src/_client.dart';
+import 'package:okhttp/src/adapters/http_client_adapter.dart';
+import 'package:okhttp/src/interceptor.dart';
+import 'package:okhttp/src/okhttp_client.dart';
+import 'package:okhttp/src/request.dart';
+import 'package:okhttp/src/response.dart';
+import 'package:okhttp/src/_client.dart';
 
 class RealInterceptorChain extends Chain {
   final int index;
   final List<Interceptor> interceptors;
-  final Client realClient;
+  final ClientAdapter adapter;
 
   RealInterceptorChain({
     required this.index,
     required Request request,
-    required this.realClient,
+    required this.adapter,
     required this.interceptors,
   }) : super(request);
 
   RealInterceptorChain copy({
     required int index,
-    Client? realClient,
+    ClientAdapter? adapter,
     Request? request,
   }) {
     return RealInterceptorChain(
       index: index,
       request: request ?? this.request,
-      realClient: realClient ?? this.realClient,
+      adapter: adapter ?? this.adapter,
       interceptors: interceptors,
     );
   }
@@ -35,7 +37,7 @@ class RealInterceptorChain extends Chain {
     final next = copy(
       index: index + 1,
       request: request,
-      realClient: realClient,
+      adapter: adapter,
     );
 
     final interceptor = interceptors[index];

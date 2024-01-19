@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:ok_http/src/utils/utils.dart';
+import 'package:okhttp/src/utils/utils.dart';
 
 const USERNAME_ENCODE_SET = " \"':;<=>@[]^`{}|/\\?#";
 const PASSWORD_ENCODE_SET = " \"':;<=>@[]^`{}|/\\?#";
@@ -68,8 +68,6 @@ extension UrlCommonOnUri on Uri {
   }
 
   String get encodedPath => encodedPathSegments.join("/");
-
-  
 }
 
 void main(List<String> args) {

@@ -1,81 +1,170 @@
-import 'dart:convert';
-import 'dart:io' as io;
+// ignore_for_file: non_constant_identifier_names
 
-import 'package:ok_http/src/cookie.dart';
-import 'package:ok_http/src/headers.dart';
-import 'package:ok_http/src/request.dart';
-import 'package:ok_http/src/utils/utils.dart';
+import 'package:dartx/dartx.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:okhttp/src/headers.dart';
+import 'package:okhttp/src/request.dart';
+import 'package:okhttp/src/response_body.dart';
 
 class Response {
-  final int statusCode;
-  final List<int> bodyBytes;
-  final int contentLength;
-  final Headers headers;
-  final bool isRedirect;
-  final bool persistentConnection;
-  final String reasonPhrase;
-  final Request request;
-  final io.X509Certificate? certificate;
-  final io.HttpConnectionInfo? connectionInfo;
-  final List<Cookie> cookies;
-
-  Encoding get encoding => encodingForHeaders(headers);
-
-  String get text => encoding.decode(bodyBytes);
-
-  Response({
+  Response._({
     required this.request,
     required this.statusCode,
-    required this.bodyBytes,
-    required this.contentLength,
     required this.headers,
-    required this.isRedirect,
-    required this.persistentConnection,
-    required this.reasonPhrase,
-    required this.cookies,
-    this.certificate,
-    this.connectionInfo,
+    required this.body,
+    required this.message,
   });
 
-  ResponseBuilder Builder() {
-    return _ResponseBuilder(this);
-  }
+  /// Use the `request` of the [networkResponse] field to get the wire-level request that was
+  /// transmitted. In the case of follow-ups and redirects, also look at the `request` of the
+  /// [priorResponse] objects, which have its own [priorResponse].
+  final Request request;
+
+  /// Returns the HTTP protocol, such as [Protocol.HTTP_1_1] or [Protocol.HTTP_1_0].
+  // final Protocol protocol
+
+  /// Returns the HTTP status message.
+  final String message;
+
+  /// Returns the HTTP status code.
+  final int statusCode;
+
+  /// Returns the TLS handshake of the connection that carried this response, or null if the
+  /// response was received without TLS.
+  //  final Handshake ? handshake;
+
+  /// Returns the HTTP headers.
+  final Headers headers;
+
+  /// Returns a non-null value if this response was passed to [Callback.onResponse] or returned
+  /// from [Call.execute]. Response bodies must be [closed][ResponseBody] and may
+  /// be consumed only once.
+  ///
+  /// This always returns null on responses returned from [cacheResponse], [networkResponse],
+  /// and [priorResponse].
+  final ResponseBody body;
+
+  static ResponseBuilder Builder() => _ResponseBuilder();
+
+  ResponseBuilder newBuilder() => _ResponseBuilder(this);
+}
+
+class _ResponseBuilder extends ResponseBuilder {
+  _ResponseBuilder([Response? response]) : super(response);
 }
 
 sealed class ResponseBuilder {
-  ResponseBuilder(this._response);
+  late Request? _request;
+  // late Protocol? _protocol;
+  late int _code;
+  late String? _message;
+  //  late Handshake? _handshake;
+  late HeadersBuilder _headers;
+  late ResponseBody _body;
+  // late   _sentRequestAtMillis: Long = 0
+  // late   _receivedResponseAtMillis: Long = 0
+  // late   _exchange: Exchange? = null
 
-  final Response _response;
+  ResponseBuilder([Response? response]) {
+    _request = response?.request;
+    _code = response?.statusCode ?? -1;
+    _message = response?.message;
+    _headers = response?.headers.newBuilder() ?? Headers.Builder();
+    _body = response?.body ?? _EmptyResponseBody();
+  }
 
-  late int statusCode = _response.statusCode;
-  late List<int> bodyBytes = _response.bodyBytes;
-  late Headers headers = _response.headers;
-  late bool isRedirect = _response.isRedirect;
-  late bool persistentConnection = _response.persistentConnection;
-  late String reasonPhrase = _response.reasonPhrase;
-  late Request request = _response.request;
-  late io.X509Certificate? certificate = _response.certificate;
-  late io.HttpConnectionInfo? connectionInfo = _response.connectionInfo;
-  late List<Cookie> cookies = _response.cookies;
-  late int contentLength = _response.contentLength;
+  /// Sets the header named [name] to [value]. If this request already has any headers
+  /// with that name, they are all replaced.
+  ResponseBuilder header(
+    String name,
+    String value,
+  ) {
+    return apply((it) {
+      it._headers.set(name, value);
+    });
+  }
+
+  /// Adds a header with [name] to [value]. Prefer this method for multiply-valued
+  /// headers like "Set-Cookie".
+  ResponseBuilder addHeader(
+    String name,
+    String value,
+  ) {
+    return apply((it) {
+      it._headers.add(name, value);
+    });
+  }
+
+  /// Removes all headers named [name] on this builder.
+  ResponseBuilder removeHeader(String name) {
+    return apply((it) {
+      it._headers.removeAll(name);
+    });
+  }
+
+  ResponseBuilder statusCode(int statusCode) {
+    return apply((it) {
+      it._code = statusCode;
+    });
+  }
+
+  /// Removes all headers on this builder and adds [headers].
+  ResponseBuilder headers(Headers headers) {
+    return apply((it) {
+      it._headers = headers.newBuilder();
+    });
+  }
+
+  ResponseBuilder request(Request request) {
+    return apply((it) {
+      it._request = request;
+    });
+  }
+
+  ResponseBuilder body(ResponseBody body) {
+    return apply((it) {
+      it._body = body;
+    });
+  }
+
+  ResponseBuilder message(String message) {
+    return apply((it) {
+      it._message = message;
+    });
+  }
 
   Response build() {
-    return Response(
-      statusCode: statusCode,
-      bodyBytes: bodyBytes,
-      contentLength: contentLength,
-      headers: headers,
-      isRedirect: isRedirect,
-      persistentConnection: persistentConnection,
-      reasonPhrase: reasonPhrase,
-      request: request,
-      certificate: certificate,
-      connectionInfo: connectionInfo,
-      cookies: cookies,
+    assert(_request != null, "request == null");
+    assert(_code >= 0, "code < 0: $_code");
+
+    return Response._(
+      request: _request!,
+      statusCode: _code,
+      headers: _headers.build(),
+      body: _body,
+      message: _message ?? '',
     );
   }
 }
 
-class _ResponseBuilder extends ResponseBuilder {
-  _ResponseBuilder(super.response);
+class _EmptyResponseBody implements ResponseBody {
+  @override
+  List<int> get bytes => [];
+
+  @override
+  int get contentLength => -1;
+
+  @override
+  MediaType? get contentType => null;
+
+  @override
+  String get string => '';
+
+  @override
+  Future<ResponseBody> close() {
+    return Future.value(this);
+  }
+
+  @override
+  Stream<String> get charStream => Stream.empty();
 }

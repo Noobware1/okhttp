@@ -1,57 +1,66 @@
+import 'dart:async';
 import 'dart:convert';
-
+import 'package:dartx/dartx.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:ok_http/src/utils/utils.dart';
+import 'package:okhttp/src/utils/utils.dart';
 
 abstract class RequestBody {
-  RequestBody(MediaType contentType)
-      : _contentType = contentType.change(parameters: {'charset': utf8.name});
+  const RequestBody();
 
-  MediaType _contentType;
-
-  MediaType get contentType => _contentType.change(parameters: {
-        'charset': _encoding.name,
-      });
-
-  Encoding get encoding => _encoding;
-
-  Encoding _encoding = utf8;
-
-  set contentType(MediaType contentType) {
-    if (contentType.parameters.containsKey('charset')) {
-      _encoding =
-          requiredEncodingForCharset(contentType.parameters['charset']!);
-      _contentType = contentType;
-    }
-  }
-
-  factory RequestBody.fromString(String content, MediaType contentType) {
-    return _StringBody(content, contentType);
-  }
-
-  /// Returns the number of bytes in that will returned by [bytes], or [byteStream], or -1 if
-  /// unknown.
   int get contentLength;
 
-  // void writeTo(StringSink sink);
+  MediaType? get contentType;
 
-  List<int> toBytes() {
-    return _encoding.encode(toString());
+  void writeTo(StreamSink<List<int>> sink);
+
+  factory RequestBody.fromString(String content, [MediaType? contentType]) {
+    final (charSet, finalContentType) = contentType.resloveWithCharSet();
+    return _BytesBody(charSet.encode(content), finalContentType);
+  }
+
+  factory RequestBody.fromMap(Map<String, String> map,
+      [MediaType? contentType]) {
+    final (charSet, finalContentType) = contentType.resloveWithCharSet();
+    return _BytesBody(charSet.encode(jsonEncode(map)), finalContentType);
+  }
+
+  factory RequestBody.fromBytes(List<int> bytes, [MediaType? contentType]) {
+    return _BytesBody(bytes, contentType);
+  }
+
+  static const empty = _BytesBody([], null);
+}
+
+final class _BytesBody extends RequestBody {
+  const _BytesBody(this._bytes, this.contentType);
+
+  final List<int> _bytes;
+
+  @override
+  final MediaType? contentType;
+
+  @override
+  int get contentLength => _bytes.length;
+
+  @override
+  void writeTo(StreamSink<List<int>> sink) {
+    sink.add(_bytes);
   }
 }
 
-class _StringBody extends RequestBody {
-  final String content;
-  _StringBody(
-    this.content,
-    super.contentType,
-  );
+extension on MediaType? {
+  (Encoding, MediaType?) resloveWithCharSet() {
+    if (isNull) {
+      return (utf8, this);
+    }
+    final Encoding charSet;
 
-  @override
-  int get contentLength => content.length;
+    if (this!.parameters.containsKey('charset')) {
+      charSet = requiredEncodingForCharset(this!.parameters['charset']!);
+    } else {
+      charSet = utf8;
+    }
 
-  @override
-  String toString() {
-    return content;
+    return (charSet, MediaType.parse('$this; charset=${charSet.name}'));
   }
 }

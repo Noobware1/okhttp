@@ -25,10 +25,12 @@ class ByteStream extends StreamView<List<int>> {
     var completer = Completer<Uint8List>();
     var sink = ByteConversionSink.withCallback(
         (bytes) => completer.complete(Uint8List.fromList(bytes)));
-    listen(sink.add,
-        onError: completer.completeError,
-        onDone: sink.close,
-        cancelOnError: true);
+    listen(
+      sink.add,
+      onError: completer.completeError,
+      onDone: sink.close,
+      cancelOnError: true,
+    );
     return completer.future;
   }
 
@@ -39,4 +41,6 @@ class ByteStream extends StreamView<List<int>> {
 
   Stream<String> toStringStream([Encoding encoding = utf8]) =>
       encoding.decoder.bind(this);
+
+
 }

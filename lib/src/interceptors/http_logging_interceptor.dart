@@ -2,12 +2,12 @@
 
 import 'dart:convert';
 
+import 'package:dartx/dartx.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:ok_http/src/common/string.dart';
-import 'package:ok_http/src/dates/date_fromatter.dart';
-import 'package:ok_http/src/headers.dart';
-import 'package:ok_http/src/interceptor.dart';
-import 'package:ok_http/src/response.dart';
+import 'package:okhttp/src/dates/date_fromatter.dart';
+import 'package:okhttp/src/headers.dart';
+import 'package:okhttp/src/interceptor.dart';
+import 'package:okhttp/src/response.dart';
 
 class Logger {
   final DateFromat format;
@@ -27,7 +27,7 @@ class Logger {
   }
 }
 
-class LoggingInterceptor extends Interceptor {
+class LoggingInterceptor implements Interceptor {
   final LogLevel level;
 
   late final Logger logger;
@@ -122,12 +122,12 @@ class LoggingInterceptor extends Interceptor {
 
     int tookMs = stopWatch.elapsedMilliseconds - DateTime.now().millisecond;
 
-    final contentLength = response.contentLength;
+    final contentLength = response.body.contentLength;
     final bodySize =
         (contentLength != -1) ? "$contentLength-byte" : "unknown-length";
 
     logger.log(
-        "<-- ${response.statusCode}${(response.reasonPhrase.isEmpty) ? "" : ' ' + response.reasonPhrase} ${response.request.url} (${tookMs}ms${(!logHeaders) ? ", $bodySize body" : ""})");
+        "<-- ${response.statusCode}${(response.message.isEmpty) ? "" : ' ' + response.message} ${response.request.url} (${tookMs}ms${(!logHeaders) ? ", $bodySize body" : ""})");
 
     if (logHeaders) {
       final headers = response.headers;
@@ -145,17 +145,10 @@ class LoggingInterceptor extends Interceptor {
         final totalMs =
             stopWatch.elapsedMilliseconds - DateTime.now().millisecond;
 
-        if (response.encoding != utf8) {
-          logger.log("");
-          logger.log(
-              "<-- END HTTP (${totalMs}ms, binary ${response.bodyBytes.length}-byte body omitted)");
-          return response;
-        } else {
-          logger.log("");
-          logger.log(response.text);
-          logger.log(
-              "<-- END HTTP (${totalMs}ms, ${response.bodyBytes.length}-byte body)");
-        }
+        logger.log("");
+        logger.log(response.body.string);
+        logger.log(
+            "<-- END HTTP (${totalMs}ms, ${response.body.bytes.length}-byte body)");
       }
     }
     stopWatch.stop();

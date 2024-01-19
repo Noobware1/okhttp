@@ -3,8 +3,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:dartx/dartx.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:ok_http/src/common/string.dart';
+import 'package:okhttp/src/common/string.dart';
+
+/// Returns the encoding to use for a response with the given headers.
+///
+/// Defaults to [latin1] if the headers don't specify a charset or if that
+/// charset is unknown.
+Encoding encodingForContentType(MediaType? contentType) =>
+    encodingForCharset(contentType?.parameters['charset']);
 
 /// Returns the encoding to use for a response with the given headers.
 ///
@@ -87,6 +95,11 @@ extension Base64Url on String {
 extension ToMediaType on String {
   /// Returns the media type for this string.
   MediaType toMediaType() => MediaType.parse(this);
+}
+
+extension ToMediaTypeorNull on String? {
+  /// Returns the media type for this string or null.
+  MediaType? toMediaTypeOrNull() => this?.let((it) => MediaType.parse(it));
 }
 
 extension TrimSubString on String {

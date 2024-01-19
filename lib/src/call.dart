@@ -1,5 +1,5 @@
-import 'package:ok_http/src/request.dart';
-import 'package:ok_http/src/response.dart';
+import 'package:okhttp/src/request.dart';
+import 'package:okhttp/src/response.dart';
 
 /// A call is a request that has been prepared for execution. A call can be canceled. As this object
 /// represents a single request/response pair (stream), it cannot be executed twice.

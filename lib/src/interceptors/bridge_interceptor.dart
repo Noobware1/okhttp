@@ -1,15 +1,15 @@
-import 'package:ok_http/src/connection/real_chain.dart';
-import 'package:ok_http/src/constants/useragent.dart';
-import 'package:ok_http/src/interceptor.dart';
-import 'package:ok_http/src/interceptors/retry_followup_interceptor.dart';
-import 'package:ok_http/src/response.dart';
+import 'package:okhttp/src/connection/real_chain.dart';
+import 'package:okhttp/src/constants/useragent.dart';
+import 'package:okhttp/src/interceptor.dart';
+import 'package:okhttp/src/interceptors/retry_followup_interceptor.dart';
+import 'package:okhttp/src/response.dart';
 
 ///
 /// Bridges from application code to network code. First it builds a network request from a user
 /// request. Then it proceeds to call the network. Finally it builds a user response from the network
 /// response.
 ///
-class BridgeInterceptor extends Interceptor {
+class BridgeInterceptor implements Interceptor {
   BridgeInterceptor();
 
   @override
@@ -17,48 +17,47 @@ class BridgeInterceptor extends Interceptor {
     chain as RealInterceptorChain;
 
     final userRequest = chain.request;
-
+    final requestBuilder = userRequest.newBuilder();
     final body = userRequest.body;
     if (body != null) {
-      userRequest.headers.add("Content-Type", body.contentType.toString());
+      requestBuilder.addHeader("Content-Type", body.contentType.toString());
     }
     final contentLength = body?.contentLength ?? -1;
 
     if (contentLength != -1) {
-      userRequest.headers.add("Content-Length", contentLength.toString());
-      userRequest.headers.remove("Transfer-Encoding");
+      requestBuilder.addHeader("Content-Length", contentLength.toString());
+      requestBuilder.removeHeader("Transfer-Encoding");
     } else {
-      userRequest.headers.add("Transfer-Encoding", "chunked");
-      userRequest.headers.remove("Content-Length");
+      requestBuilder.addHeader("Transfer-Encoding", "chunked");
+      requestBuilder.removeHeader("Content-Length");
     }
 
-    // if (userRequest.headers["Host"] == null) {
-    //   userRequest.headers.add("Host", userRequest.url.host);
-    // }
+    if (userRequest.headers["Host"] == null) {
+      requestBuilder.addHeader("Host", userRequest.url.host);
+    }
 
     if (userRequest.headers["Connection"] == null) {
-      userRequest.headers.add("Connection", "Keep-Alive");
+      requestBuilder.addHeader("Connection", "Keep-Alive");
     }
 
     // If we add an "Accept-Encoding: gzip" header field we're responsible for also decompressing
     // the transfer stream.
-    if (userRequest.headers["Accept-Encoding"] == null) {
-      userRequest.headers.add("Accept-Encoding", "gzip");
+    if (userRequest.headers["Accept - Encoding"] == null) {
+      requestBuilder.addHeader("Accept-Encoding", "gzip");
     }
 //     val cookies = cookieJar.loadForRequest(userRequest.url)
 //     if (cookies.isNotEmpty()) {
 //       requestBuilder.header("Cookie", cookieHeader(cookies))
 //     }
     if (userRequest.headers["User-Agent"] == null) {
-      userRequest.headers.add("User-Agent", USER_AGENT);
+      requestBuilder.addHeader("User-Agent", USER_AGENT);
     }
 
-    final networkRequest = userRequest.build();
+    final networkRequest = requestBuilder.build();
     final networkResponse = await chain.proceed(networkRequest);
-    final responseBuilder = networkResponse.Builder();
-    responseBuilder.request = networkRequest;
+    final response = networkResponse.newBuilder().request(userRequest).build();
 
-    return responseBuilder.build();
+    return response;
   }
 }
 

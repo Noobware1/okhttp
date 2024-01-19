@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:ok_http/src/public_suffix/idn.dart';
-import 'package:ok_http/src/utils/list_extensions.dart';
+import 'package:okhttp/src/public_suffix/idn.dart';
+import 'package:okhttp/src/utils/list_extensions.dart';
 
 class PublicSuffixDataBase {
   static const EXCEPTION_MARKER = '!';

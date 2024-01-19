@@ -25,8 +25,8 @@ Get a URL
 ---------
 
 ```dart
-import 'package:ok_http/client.dart';
-import 'package:ok_http/request.dart';
+import 'package:okhttp/client.dart';
+import 'package:okhttp/request.dart';
 
 OkHttpClient client = OkHttpClient();
 
@@ -48,10 +48,10 @@ Post to a Server
 ----------------
 
 ```dart
-import 'package:ok_http/client.dart';
-import 'package:ok_http/media_type.dart';
-import 'package:ok_http/request.dart';
-import 'package:ok_http/request_body.dart';
+import 'package:okhttp/client.dart';
+import 'package:okhttp/media_type.dart';
+import 'package:okhttp/request.dart';
+import 'package:okhttp/request_body.dart';
 
 final MediaType JSON = MediaType.parse("application/json");
 

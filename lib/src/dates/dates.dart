@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:ok_http/src/dates/date_fromatter.dart';
+import 'package:okhttp/src/dates/date_fromatter.dart';
 
 /// The last four-digit year: "Fri, 31 Dec 9999 23:59:59 GMT".
 const int MAX_DATE = 253402300799999;

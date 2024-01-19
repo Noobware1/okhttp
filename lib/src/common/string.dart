@@ -1,14 +1,10 @@
 import 'dart:convert';
 
-import 'package:ok_http/src/common/url_common.dart';
+import 'package:okhttp/src/common/url_common.dart';
+import 'package:okhttp/src/utils/utils.dart';
 
 extension StringCommon on String {
   int get code => codeUnitAt(0);
-
-  bool equals(String other, {ignoreCase = false}) {
-    if (!ignoreCase) return this == other;
-    return toLowerCase() == other.toLowerCase();
-  }
 
   ///
   /// Returns a substring of `input` on the range `[pos..limit)` with the following
@@ -55,14 +51,6 @@ extension StringCommon on String {
 
   String percentDecode() {
     return Uri.decodeComponent(this);
-  }
-
-  int toInt() {
-    return int.parse(this);
-  }
-
-  int? toIntOrNull() {
-    return int.tryParse(this);
   }
 
   String removePrefix(String prefix) {

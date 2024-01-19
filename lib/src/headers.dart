@@ -1,46 +1,130 @@
-import 'package:ok_http/src/common/map.dart';
-import 'package:ok_http/src/common/string.dart';
+// ignore_for_file: non_constant_identifier_names
 
-class Headers extends CommonMap<String, String> {
-  Headers() : super(caseInsensitiveKeyMap());
+import 'package:dartx/dartx.dart';
+import 'package:okhttp/src/common/map.dart';
+import 'package:okhttp/src/dates/dates.dart';
 
-  String name(int index) => keys.elementAt(index);
+final class Headers {
+  Headers._(this._nameAndValues);
 
-  String value(int index) => values.elementAt(index);
+  final Map<String, List<String>> _nameAndValues;
+
+  /// Returns the last value corresponding to the specified field, or null.
+  String? get(String name) => _get(name);
+
+  String? operator [](String name) {
+    return _get(name);
+  }
+
+  int get length => _nameAndValues.values.fold(0, (previousValue, element) {
+        return previousValue + element.length;
+      });
+
+  /// Returns the last value corresponding to the specified field parsed as an HTTP date, or null if either the field is absent or cannot be parsed as a date.
+  DateTime? getDate(String name) =>
+      _get(name)?.let((it) => DateTime.tryParse(it));
+
+  String? _get(String name) => _nameAndValues[name]?.last;
+
+  String name(int index) => _nameAndValues.keys.elementAt(index);
+
+  String value(int index) => _nameAndValues.values.elementAt(index).first;
+
+  Set<String> get names => Set.unmodifiable(_nameAndValues.keys);
+
+  List<String>? values(String name) => _nameAndValues[name];
+
+  static HeadersBuilder Builder() => _HeadersBuilder();
+
+  HeadersBuilder newBuilder() => _HeadersBuilder(this);
+
+  void forEach(void Function(String name, List<String> value) action) {
+    _nameAndValues.forEach(action);
+  }
 
   @override
   String toString() {
-    final StringBuffer sb = StringBuffer();
-    for (var i = 0; i < length; i++) {
-      final name = this.name(i);
-      final value = this.value(i);
-      sb.write(name);
-      sb.write(": ");
-      sb.write(value);
-      if (i != length - 1) {
-        sb.write("\n");
+    final stringBuffer = StringBuffer();
+    _nameAndValues.forEach((key, value) {
+      for (final e in value) {
+        stringBuffer.writeln('$key: $e');
       }
-    }
-    return sb.toString();
+    });
+    return stringBuffer.toString();
   }
 
-  List<String> getNames(String name) {
-    final result = <String>[];
-    for (var i = 0; i < length; i++) {
-      if (name.equals(this.name(i), ignoreCase: true)) {
-        result.add(this.name(i));
+  List<Pair<String, String>> toList() {
+    var list = <Pair<String, String>>[];
+
+    _nameAndValues.forEach((key, value) {
+      for (final e in value) {
+        list.add(Pair(key, e));
       }
-    }
-    return result;
+    });
+
+    return list;
   }
 
-  List<String> getValues(String name) {
-    final result = <String>[];
-    for (var i = 0; i < length; i++) {
-      if (name.equals(this.name(i), ignoreCase: true)) {
-        result.add(value(i));
-      }
-    }
-    return result;
+  Map<String, List<String>> toMap() {
+    return _nameAndValues;
   }
+}
+
+final class _HeadersBuilder extends HeadersBuilder {
+  _HeadersBuilder([Headers? headers]) : super(headers);
+}
+
+sealed class HeadersBuilder {
+  final Map<String, List<String>> _namesAndValues = {};
+
+  HeadersBuilder([Headers? headers]) {
+    if (headers != null) {
+      _namesAndValues.addAll(headers._nameAndValues);
+    }
+  }
+
+  HeadersBuilder add(String name, dynamic value) {
+    final values = _namesAndValues[name];
+    if (values.isNull) {
+      return set(name, value);
+    }
+    return apply((it) {
+      if (value is DateTime) {
+        values!.add(value.toHttpDateString().trim());
+      } else if (value is String) {
+        values!.add(value.trim());
+      } else if (value is Iterable<String>) {
+        values!.addAll(value.map((e) => e.trim()));
+      } else {
+        throw _valueError(value);
+      }
+    });
+  }
+
+  HeadersBuilder addAll(Headers headers) {
+    return apply((it) {
+      it._namesAndValues.addAll(headers._nameAndValues);
+    });
+  }
+
+  HeadersBuilder set(String name, dynamic value) => apply((it) {
+        if (value is DateTime) {
+          it._namesAndValues[name] = [value.toHttpDateString().trim()];
+        } else if (value is String) {
+          it._namesAndValues[name] = [value.trim()];
+        } else if (value is Iterable<String>) {
+          it._namesAndValues[name] = value.map((e) => e.trim()).toList();
+        } else {
+          throw _valueError(value);
+        }
+      });
+
+  HeadersBuilder removeAll(String name) => apply((it) {
+        it._namesAndValues.remove(name);
+      });
+
+  Headers build() => Headers._(_namesAndValues);
+
+  ArgumentError _valueError(dynamic value) => ArgumentError.value(
+      value, "value", "must be DateTime, String or Iterable<String>");
 }

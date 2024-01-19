@@ -1,32 +1,27 @@
-import 'package:ok_http/src/call.dart';
-import 'package:ok_http/src/connection/real_chain.dart';
-import 'package:ok_http/src/interceptor.dart';
-import 'package:ok_http/src/interceptors/bridge_interceptor.dart';
-import 'package:ok_http/src/interceptors/connect_interceptor.dart';
-import 'package:ok_http/src/ok_http_client.dart';
-import 'package:ok_http/src/request.dart';
-import 'package:ok_http/src/response.dart';
-import 'package:ok_http/src/_client.dart';
+import 'package:okhttp/src/call.dart';
+import 'package:okhttp/src/connection/real_chain.dart';
+import 'package:okhttp/src/interceptor.dart';
+import 'package:okhttp/src/interceptors/bridge_interceptor.dart';
+import 'package:okhttp/src/interceptors/connect_interceptor.dart';
+import 'package:okhttp/src/interceptors/response_body_interceptor.dart';
+import 'package:okhttp/src/okhttp_client.dart';
+import 'package:okhttp/src/request.dart';
+import 'package:okhttp/src/response.dart';
+import 'package:okhttp/src/_client.dart';
 
 class RealCall implements Call {
   RealCall({
     required this.client,
     required this.originalRequest,
-    required this.realClient,
   });
 
-  final RealClient realClient;
-
   final OkHttpClient client;
-
-  // RealChain copyWith(int index) {
-  //   return RealChain(index: index, request: request, client: client);
-  // }
 
   Future<Response> getResponseWithInterceptorChain() async {
     final interceptors = <Interceptor>[];
 
     interceptors.addAll(client.interceptors);
+    interceptors.add(ResponseBodyInterceptor());
     interceptors.add(BridgeInterceptor());
     interceptors.addAll(client.networkInterceptors);
     interceptors.add(ConnectInterceptor());
@@ -34,7 +29,7 @@ class RealCall implements Call {
     final chain = RealInterceptorChain(
       index: 0,
       request: originalRequest,
-      realClient: realClient,
+      adapter: client.adapter,
       interceptors: interceptors,
     );
 
@@ -44,14 +39,14 @@ class RealCall implements Call {
       print(e);
       throw Exception("Error");
     } finally {
-      realClient.close();
+      client.adapter.close();
     }
   }
 
   @override
   void cancel() {
     _isCanceled = true;
-    realClient.close();
+    client.adapter.close();
   }
 
   @override
@@ -59,7 +54,6 @@ class RealCall implements Call {
     return RealCall(
       client: client,
       originalRequest: originalRequest,
-      realClient: realClient,
     );
   }
 
@@ -84,7 +78,6 @@ class RealCall implements Call {
     return RealCall(
       client: client,
       originalRequest: request,
-      realClient: realClient,
     );
   }
 

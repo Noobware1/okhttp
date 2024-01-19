@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:ok_http/src/common/string.dart';
+import 'package:okhttp/src/common/string.dart';
 
 ///
 /// Quick and dirty pattern to differentiate IP addresses from hostnames. This is an approximation

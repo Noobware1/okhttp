@@ -1,4 +1,4 @@
-import 'package:ok_http/src/common/string.dart';
+import 'package:dartx/dartx.dart';
 
 bool isSensitiveHeader(String key) {
   return key.equals("Authorization", ignoreCase: true) ||

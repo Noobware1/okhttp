@@ -1,19 +1,18 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:ok_http/src/common/host_name_commons.dart';
-import 'package:ok_http/src/common/long.dart';
-import 'package:ok_http/src/common/regex.dart';
-import 'package:ok_http/src/common/string.dart';
-import 'package:ok_http/src/common/url_common.dart';
-import 'package:ok_http/src/dates/dates.dart';
-import 'package:ok_http/src/headers.dart';
-import 'package:ok_http/src/utils/utils.dart';
+import 'package:dartx/dartx.dart'
+    hide OrEmptyIterable, OrEmptyMap, NullableStringExtensions;
+import 'package:okhttp/src/common/host_name_commons.dart';
+import 'package:okhttp/src/common/long.dart';
+import 'package:okhttp/src/common/regex.dart';
+import 'package:okhttp/src/common/string.dart';
+import 'package:okhttp/src/common/url_common.dart';
+import 'package:okhttp/src/dates/dates.dart';
+import 'package:okhttp/src/headers.dart';
+import 'package:okhttp/src/utils/utils.dart';
 
 class Cookie {
-  final String name;
-  final String value;
-
-  const Cookie({
+  const Cookie._({
     required this.name,
     required this.value,
     required this.expiresAt,
@@ -23,8 +22,12 @@ class Cookie {
     required this.httpOnly,
     required this.persistent,
     required this.hostOnly,
-    this.sameSite,
+    required this.sameSite,
   });
+
+  final String name;
+
+  final String value;
 
   ///
   /// Returns the time that this cookie expires, in the same format as `DateTime.now().millisecondsSinceEpoch`.
@@ -112,6 +115,10 @@ class Cookie {
 
     return !secure || url.isHttps;
   }
+
+  static CookieBuilder Builder() => _CookieBuilder();
+
+  CookieBuilder newBuilder() => _CookieBuilder(this);
 
   @override
   bool operator ==(Object other) {
@@ -201,19 +208,21 @@ class Cookie {
   }
 
   static List<Cookie> parseAll(Uri url, Headers headers) {
-    final cookieStrings = headers.getValues("Set-Cookie");
-    List<Cookie>? cookies;
-    for (var i = 0; i < cookieStrings.length; i++) {
-      try {
-        final cookie = parse(url, cookieStrings[i]);
-        cookies ??= [];
-        cookies.add(cookie!);
-      } catch (e) {
-        continue;
+    final cookies = headers.values("Set-Cookie")?.let((it) {
+      List<Cookie>? cookies;
+      for (var i = 0; i < it.length; i++) {
+        try {
+          final cookie = parse(url, it[i]);
+          cookies ??= [];
+          cookies.add(cookie!);
+        } catch (e) {
+          continue;
+        }
       }
-    }
-    if (cookies != null) return List.of(cookies, growable: false);
-    return List.empty(growable: true);
+      if (cookies != null) return List<Cookie>.of(cookies, growable: false);
+      return List<Cookie>.empty(growable: true);
+    });
+    return cookies.orEmpty();
   }
 
   static Cookie? parse(Uri url, String setCookie) {
@@ -347,7 +356,7 @@ class Cookie {
       path = (lastSlash != 0) ? encodedPath.substring(0, lastSlash) : "/";
     }
 
-    return Cookie(
+    return Cookie._(
       name: cookieName,
       value: cookieValue,
       expiresAt: expiresAt,
@@ -392,17 +401,17 @@ class Cookie {
       pos = dateCharacterOffset(s, end + 1, limit, false);
     }
     // Convert two-digit years into four-digit years. 99 becomes 1999, 15 becomes 2015.
-    if (List.generate(22, (index) => 77 + index).contains(year)) year += 1900;
-    if (List.generate(69, (index) => 77 + index).contains(year)) year += 2000;
+    if (year >= 77 && year <= 98) year += 1900;
+    if (year >= 77 && year <= 145) year += 2000;
 
     // If any partial is omitted or out of range, return -1. The date is impossible. Note that leap
     // seconds are not supported by this syntax.
     assert(year >= 1601);
     assert(month != -1);
-    assert(List.generate(31, (index) => index + 1).contains(dayOfMonth));
-    assert(List.generate(23, (index) => index).contains(hour));
-    assert(List.generate(59, (index) => index).contains(minute));
-    assert(List.generate(59, (index) => index).contains(second));
+    assert(dayOfMonth >= 1 && dayOfMonth <= 31);
+    assert(hour >= 0 && hour <= 23);
+    assert(minute >= 0 && minute <= 59);
+    assert(second >= 0 && second <= 59);
 
     return DateTime(
       year,
@@ -455,6 +464,115 @@ class Cookie {
     // throw UnimplementedError();
     return s;
     // return s.removePrefix(".").toCanonicalHost();
+  }
+}
+
+class _CookieBuilder extends CookieBuilder {
+  _CookieBuilder([Cookie? cookie]) : super(cookie);
+}
+
+sealed class CookieBuilder {
+  late String? _name;
+  late String? _value;
+  late int _expiresAt;
+  late String? _domain;
+  late String _path;
+  late bool _secure;
+  late bool _httpOnly;
+  late bool _persistent;
+  late bool _hostOnly;
+  late String? _sameSite;
+
+  CookieBuilder([Cookie? cookie]) {
+    _name = cookie?.name;
+    _value = cookie?.value;
+    _expiresAt = cookie?.expiresAt ?? MAX_DATE;
+    _domain = cookie?.domain;
+    _path = cookie?.path ?? "/";
+    _secure = cookie?.secure ?? false;
+    _httpOnly = cookie?.httpOnly ?? false;
+    _persistent = cookie?.persistent ?? false;
+    _hostOnly = cookie?.hostOnly ?? false;
+    _sameSite = cookie?.sameSite;
+  }
+
+  CookieBuilder name(String name) {
+    return apply((it) {
+      assert(name.trim() == name, "name is not trimmed");
+      it._name = name;
+    });
+  }
+
+  CookieBuilder value(String value) {
+    return apply((it) {
+      assert(value.trim() == value, "value is not trimmed");
+      it._value = value;
+    });
+  }
+
+  CookieBuilder expiresAt(int expiresAt) {
+    return apply((it) {
+      if (expiresAt <= 0) expiresAt = Long.MIN_VALUE;
+      if (expiresAt > MAX_DATE) expiresAt = MAX_DATE;
+      it._expiresAt = expiresAt;
+      it._persistent = true;
+    });
+  }
+
+  CookieBuilder domain(String domain) => _setDomain(domain, false);
+
+  /// Set the host-only domain for this cookie. The cookie will match [domain] but none of
+  /// its subdomains.
+  CookieBuilder hostOnlyDomain(String domain) => _setDomain(domain, true);
+
+  CookieBuilder _setDomain(String domain, bool hostOnly) {
+    return apply((it) {
+      it._domain = domain;
+      it._persistent = true;
+    });
+  }
+
+  CookieBuilder path(String path) {
+    return apply((it) {
+      it._path = path;
+    });
+  }
+
+  CookieBuilder secure() {
+    return apply((it) {
+      it._secure = true;
+    });
+  }
+
+  CookieBuilder httpOnly() {
+    return apply((it) {
+      it._httpOnly = true;
+    });
+  }
+
+  CookieBuilder sameSite(String sameSite) {
+    return apply((it) {
+      assert(sameSite.trim() == sameSite, "sameSite is not trimmed");
+      it._sameSite = sameSite;
+    });
+  }
+
+  Cookie build() {
+    assert(_name != null, {"name == null"});
+    assert(_value != null, {"value == null"});
+    assert(_domain != null, {"domain == null"});
+    return Cookie._(
+      name: _name!,
+      value: _value!,
+      expiresAt: _expiresAt,
+      domain: _domain!,
+      path: _path,
+      secure: _secure,
+      httpOnly: _httpOnly,
+      persistent: _persistent,
+      hostOnly: _hostOnly,
+      sameSite: _sameSite,
+    );
   }
 }
 
