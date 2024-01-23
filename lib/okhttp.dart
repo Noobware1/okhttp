@@ -6,3 +6,5 @@ export 'src/credentials.dart';
 export 'src/call.dart';
 export 'src/okhttp_client.dart';
 export 'src/byte_stream.dart';
+export 'src/dates/date_fromatter.dart';
+export 'src/dates/dates.dart';
