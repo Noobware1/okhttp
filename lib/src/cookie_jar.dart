@@ -43,6 +43,6 @@ class _NoCookies implements CookieJar {
 
   @override
   List<Cookie> loadForRequest(Uri url) {
-    return [];
+    return List.empty();
   }
 }

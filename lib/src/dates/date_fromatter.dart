@@ -9,16 +9,16 @@ class DateFormatter {
   DateFormatter(this.date);
 
   String format(DateFromat dateFromat) {
-    var _format = dateFromat.format.toUpperCase();
-    final weekday = parseWeekDay(_format);
+    var format = dateFromat.format.toUpperCase();
+    final weekday = parseWeekDay(format);
 
     final day = date.day;
-    final month = parseMonth(_format);
+    final month = parseMonth(format);
 
-    final year = parseYear(_format);
-    final time = parseDuration(_format);
+    final year = parseYear(format);
+    final time = parseDuration(format);
 
-    final timeZone = parseTimeZone(_format);
+    final timeZone = parseTimeZone(format);
 
     final buffer = StringBuffer();
     if (weekday != null) {

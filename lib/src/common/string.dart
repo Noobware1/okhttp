@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:okhttp/src/common/url_common.dart';
-import 'package:okhttp/src/utils/utils.dart';
 
 extension StringCommon on String {
   int get code => codeUnitAt(0);

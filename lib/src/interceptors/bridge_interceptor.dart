@@ -1,7 +1,6 @@
 import 'package:okhttp/src/connection/real_chain.dart';
 import 'package:okhttp/src/constants/useragent.dart';
 import 'package:okhttp/src/interceptor.dart';
-import 'package:okhttp/src/interceptors/retry_followup_interceptor.dart';
 import 'package:okhttp/src/response.dart';
 
 ///
@@ -20,37 +19,32 @@ class BridgeInterceptor implements Interceptor {
     final requestBuilder = userRequest.newBuilder();
     final body = userRequest.body;
     if (body != null) {
-      requestBuilder.addHeader("Content-Type", body.contentType.toString());
+      requestBuilder.header("Content-Type", body.contentType.toString());
     }
     final contentLength = body?.contentLength ?? -1;
 
     if (contentLength != -1) {
-      requestBuilder.addHeader("Content-Length", contentLength.toString());
+      requestBuilder.header("Content-Length", contentLength.toString());
       requestBuilder.removeHeader("Transfer-Encoding");
     } else {
-      requestBuilder.addHeader("Transfer-Encoding", "chunked");
+      requestBuilder.header("Transfer-Encoding", "chunked");
       requestBuilder.removeHeader("Content-Length");
     }
 
     if (userRequest.headers["Host"] == null) {
-      requestBuilder.addHeader("Host", userRequest.url.host);
+      requestBuilder.header("Host", userRequest.url.host);
     }
 
     if (userRequest.headers["Connection"] == null) {
-      requestBuilder.addHeader("Connection", "Keep-Alive");
+      requestBuilder.header("Connection", "Keep-Alive");
     }
 
-    // If we add an "Accept-Encoding: gzip" header field we're responsible for also decompressing
-    // the transfer stream.
     if (userRequest.headers["Accept - Encoding"] == null) {
-      requestBuilder.addHeader("Accept-Encoding", "gzip");
+      requestBuilder.header("Accept-Encoding", "gzip");
     }
-//     val cookies = cookieJar.loadForRequest(userRequest.url)
-//     if (cookies.isNotEmpty()) {
-//       requestBuilder.header("Cookie", cookieHeader(cookies))
-//     }
+
     if (userRequest.headers["User-Agent"] == null) {
-      requestBuilder.addHeader("User-Agent", USER_AGENT);
+      requestBuilder.header("User-Agent", USER_AGENT);
     }
 
     final networkRequest = requestBuilder.build();
@@ -60,14 +54,3 @@ class BridgeInterceptor implements Interceptor {
     return response;
   }
 }
-
-
-
-//   /** Returns a 'Cookie' HTTP request header with all cookies, like `a=b; c=d`. */
-//   private fun cookieHeader(cookies: List<Cookie>): String = buildString {
-//     cookies.forEachIndexed { index, cookie ->
-//       if (index > 0) append("; ")
-//       append(cookie.name).append('=').append(cookie.value)
-//     }
-//   }
-// }

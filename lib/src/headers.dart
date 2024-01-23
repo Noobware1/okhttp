@@ -1,7 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dartx/dartx.dart';
-import 'package:okhttp/src/common/map.dart';
 import 'package:okhttp/src/dates/dates.dart';
 
 final class Headers {
@@ -85,16 +84,16 @@ sealed class HeadersBuilder {
 
   HeadersBuilder add(String name, dynamic value) {
     final values = _namesAndValues[name];
-    if (values.isNull) {
+    if (values == null) {
       return set(name, value);
     }
     return apply((it) {
       if (value is DateTime) {
-        values!.add(value.toHttpDateString().trim());
+        values.add(value.toHttpDateString().trim());
       } else if (value is String) {
-        values!.add(value.trim());
+        values.add(value.trim());
       } else if (value is Iterable<String>) {
-        values!.addAll(value.map((e) => e.trim()));
+        values.addAll(value.map((e) => e.trim()));
       } else {
         throw _valueError(value);
       }

@@ -1,12 +1,14 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:io';
 
 import 'package:dartx/dartx.dart';
 import 'package:okhttp/src/adapters/http_client_adapter.dart';
 import 'package:okhttp/src/call.dart';
+import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/connection/real_call.dart';
 import 'package:okhttp/src/interceptor.dart';
 import 'package:okhttp/src/request.dart';
-import 'package:okhttp/src/_client.dart';
 
 class OkHttpClient {
   final List<Interceptor> interceptors;
@@ -20,7 +22,7 @@ class OkHttpClient {
   // final ProxySelector proxySelector = ProxySelector();
   // final proxyAuthenticator = Authenticator();
   // final x509TrustManager = X509TrustManager();
-
+  final bool closeResponseBody;
   final bool retryOnConnectionFailure;
   final int callTimeoutMillis;
   final int connectTimeoutMillis;
@@ -51,14 +53,17 @@ class OkHttpClient {
         pingIntervalMillis = 0,
         minWebSocketMessageToCompress = 0,
         persistentConnection = true,
+        closeResponseBody = true,
         followRedirects = true,
         maxRedirects = 5,
-        adapter = HttpClientAdapter();
+        adapter = HttpClientAdapter(
+            followRedirects: true, maxRedirects: 5, persistentConnection: true);
 
   OkHttpClient._(OkHttpClientBuilder builder)
       : interceptors = builder.interceptors,
         networkInterceptors = builder.networkInterceptors,
         retryOnConnectionFailure = builder._retryOnConnectionFailure,
+        closeResponseBody = builder._closeResponseBody,
         callTimeoutMillis = builder._callTimeoutMillis,
         connectTimeoutMillis = builder._connectTimeoutMillis,
         readTimeoutMillis = builder._readTimeoutMillis,
@@ -83,9 +88,9 @@ class OkHttpClient {
 
   OkHttpClientBuilder newBuilder() => _OkHttpClientBuilder(this);
 
-  // void close() {
-  //   _realClient.close();
-  // }
+  void destroy() {
+    adapter.close();
+  }
 }
 
 class _OkHttpClientBuilder extends OkHttpClientBuilder {
@@ -95,32 +100,34 @@ class _OkHttpClientBuilder extends OkHttpClientBuilder {
 sealed class OkHttpClientBuilder {
   final List<Interceptor> _interceptors = [];
   final List<Interceptor> _networkInterceptors = [];
-  late bool _retryOnConnectionFailure;
-  late int _callTimeoutMillis;
-  late int _connectTimeoutMillis;
-  late int _readTimeoutMillis;
-  late int _writeTimeoutMillis;
-  late int _pingIntervalMillis;
-  late int _minWebSocketMessageToCompress;
-  late bool _persistentConnection;
-  late bool _followRedirects;
-  late int _maxRedirects;
-  late ClientAdapter _adapter;
+  bool _retryOnConnectionFailure;
+  int _callTimeoutMillis;
+  int _connectTimeoutMillis;
+  int _readTimeoutMillis;
+  int _writeTimeoutMillis;
+  int _pingIntervalMillis;
+  int _minWebSocketMessageToCompress;
+  bool _persistentConnection;
+  bool _followRedirects;
+  bool _closeResponseBody;
+  int _maxRedirects;
+  ClientAdapter _adapter;
 
-  OkHttpClientBuilder(OkHttpClient client) {
+  OkHttpClientBuilder(OkHttpClient client)
+      : _retryOnConnectionFailure = client.retryOnConnectionFailure,
+        _closeResponseBody = client.closeResponseBody,
+        _callTimeoutMillis = client.callTimeoutMillis,
+        _connectTimeoutMillis = client.connectTimeoutMillis,
+        _readTimeoutMillis = client.readTimeoutMillis,
+        _writeTimeoutMillis = client.writeTimeoutMillis,
+        _pingIntervalMillis = client.pingIntervalMillis,
+        _minWebSocketMessageToCompress = client.minWebSocketMessageToCompress,
+        _persistentConnection = client.persistentConnection,
+        _followRedirects = client.followRedirects,
+        _maxRedirects = client.maxRedirects,
+        _adapter = client.adapter {
     _interceptors.addAll(client.interceptors);
     _networkInterceptors.addAll(client.networkInterceptors);
-    _retryOnConnectionFailure = client.retryOnConnectionFailure;
-    _callTimeoutMillis = client.callTimeoutMillis;
-    _connectTimeoutMillis = client.connectTimeoutMillis;
-    _readTimeoutMillis = client.readTimeoutMillis;
-    _writeTimeoutMillis = client.writeTimeoutMillis;
-    _pingIntervalMillis = client.pingIntervalMillis;
-    _minWebSocketMessageToCompress = client.minWebSocketMessageToCompress;
-    _persistentConnection = client.persistentConnection;
-    _followRedirects = client.followRedirects;
-    _maxRedirects = client.maxRedirects;
-    _adapter = client.adapter;
   }
 
   List<Interceptor> get interceptors => List.unmodifiable(_interceptors);
@@ -143,6 +150,12 @@ sealed class OkHttpClientBuilder {
   OkHttpClientBuilder retryOnConnectionFailure(bool retryOnConnectionFailure) {
     return apply((it) {
       it._retryOnConnectionFailure = retryOnConnectionFailure;
+    });
+  }
+
+  OkHttpClientBuilder closeResponseBody(bool closeResponseBody) {
+    return apply((it) {
+      it._closeResponseBody = closeResponseBody;
     });
   }
 

@@ -41,6 +41,4 @@ class ByteStream extends StreamView<List<int>> {
 
   Stream<String> toStringStream([Encoding encoding = utf8]) =>
       encoding.decoder.bind(this);
-
-
 }

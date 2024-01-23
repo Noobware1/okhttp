@@ -472,29 +472,28 @@ class _CookieBuilder extends CookieBuilder {
 }
 
 sealed class CookieBuilder {
-  late String? _name;
-  late String? _value;
-  late int _expiresAt;
-  late String? _domain;
-  late String _path;
-  late bool _secure;
-  late bool _httpOnly;
-  late bool _persistent;
-  late bool _hostOnly;
-  late String? _sameSite;
+  String? _name;
+  String? _value;
+  int _expiresAt;
+  String? _domain;
+  String _path;
+  bool _secure;
+  bool _httpOnly;
+  bool _persistent;
+  final bool _hostOnly;
+  String? _sameSite;
 
-  CookieBuilder([Cookie? cookie]) {
-    _name = cookie?.name;
-    _value = cookie?.value;
-    _expiresAt = cookie?.expiresAt ?? MAX_DATE;
-    _domain = cookie?.domain;
-    _path = cookie?.path ?? "/";
-    _secure = cookie?.secure ?? false;
-    _httpOnly = cookie?.httpOnly ?? false;
-    _persistent = cookie?.persistent ?? false;
-    _hostOnly = cookie?.hostOnly ?? false;
-    _sameSite = cookie?.sameSite;
-  }
+  CookieBuilder([Cookie? cookie])
+      : _name = cookie?.name,
+        _value = cookie?.value,
+        _expiresAt = cookie?.expiresAt ?? MAX_DATE,
+        _domain = cookie?.domain,
+        _path = cookie?.path ?? "/",
+        _secure = cookie?.secure ?? false,
+        _httpOnly = cookie?.httpOnly ?? false,
+        _persistent = cookie?.persistent ?? false,
+        _hostOnly = cookie?.hostOnly ?? false,
+        _sameSite = cookie?.sameSite;
 
   CookieBuilder name(String name) {
     return apply((it) {

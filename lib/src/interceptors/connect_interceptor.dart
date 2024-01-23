@@ -4,10 +4,9 @@ import 'package:okhttp/src/response.dart';
 
 class ConnectInterceptor implements Interceptor {
   @override
-  Future<Response> intercept(Chain chain) {
+  Future<Response> intercept(Chain chain) async {
     final realchain = chain as RealInterceptorChain;
     final request = chain.request;
-
     return realchain.adapter.newCall(request);
   }
 }

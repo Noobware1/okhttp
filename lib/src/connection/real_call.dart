@@ -1,5 +1,7 @@
+import 'package:async/async.dart';
 import 'package:okhttp/src/call.dart';
 import 'package:okhttp/src/connection/real_chain.dart';
+import 'package:okhttp/src/expections/okhttp_exception.dart';
 import 'package:okhttp/src/interceptor.dart';
 import 'package:okhttp/src/interceptors/bridge_interceptor.dart';
 import 'package:okhttp/src/interceptors/connect_interceptor.dart';
@@ -7,7 +9,6 @@ import 'package:okhttp/src/interceptors/response_body_interceptor.dart';
 import 'package:okhttp/src/okhttp_client.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
-import 'package:okhttp/src/_client.dart';
 
 class RealCall implements Call {
   RealCall({
@@ -22,6 +23,7 @@ class RealCall implements Call {
 
     interceptors.addAll(client.interceptors);
     interceptors.add(ResponseBodyInterceptor());
+    // interceptors.add(RetryAndFollowUpInterceptor(client));
     interceptors.add(BridgeInterceptor());
     interceptors.addAll(client.networkInterceptors);
     interceptors.add(ConnectInterceptor());
@@ -31,22 +33,27 @@ class RealCall implements Call {
       request: originalRequest,
       adapter: client.adapter,
       interceptors: interceptors,
+      call: this,
     );
 
     try {
       return await chain.proceed(originalRequest);
-    } catch (e) {
-      print(e);
-      throw Exception("Error");
-    } finally {
-      client.adapter.close();
+    } catch (e, s) {
+      throw OkHttpException(
+        e.toString(),
+        error: e is Exception ? e : null,
+        stackTrace: s,
+        reasonPhrase: null,
+        statusCode: null,
+        uri: null,
+      );
     }
   }
 
   @override
   void cancel() {
     _isCanceled = true;
-    client.adapter.close();
+    _cancelableCall?.cancel();
   }
 
   @override
@@ -57,10 +64,24 @@ class RealCall implements Call {
     );
   }
 
+  CancelableOperation<Response>? _cancelableCall;
+
   @override
-  Future<Response> execute() {
+  Future<Response> execute() async {
     _isExecuted = true;
-    return getResponseWithInterceptorChain();
+    _cancelableCall = CancelableOperation<Response>.fromFuture(
+      getResponseWithInterceptorChain(),
+    );
+
+    return await _cancelableCall?.valueOrCancellation() ??
+        (throw OkHttpException(
+          'Canceled',
+          error: null,
+          stackTrace: null,
+          reasonPhrase: null,
+          statusCode: null,
+          uri: null,
+        ));
   }
 
   @override

@@ -58,12 +58,3 @@ abstract interface class Call {
 
   Call newCall(Request request);
 }
-
-typedef Callback = void Function({
-  required OnFailure onFailure,
-  required OnResponse onResponse,
-});
-
-typedef OnFailure = void Function(Call call, Exception e);
-
-typedef OnResponse = void Function(Call call, Response response);

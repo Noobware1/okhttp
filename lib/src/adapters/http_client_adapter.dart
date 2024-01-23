@@ -1,31 +1,41 @@
 import 'dart:io';
 import 'package:dartx/dartx.dart';
-import 'package:okhttp/src/byte_stream.dart';
+import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/headers.dart';
+import 'package:okhttp/src/okhttp_client.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
-import 'package:okhttp/src/stream_response_body.dart';
+import 'package:okhttp/src/response_body/io_response_body.dart';
 
 class HttpClientAdapter implements ClientAdapter {
+  final bool _followRedirects;
+  final int _maxRedirects;
+  final bool _persistentConnection;
   final _inner = HttpClient();
-
-  @override
-  ClientAdapter createAdapter() {
-    return HttpClientAdapter();
-  }
+  HttpClientAdapter({
+    required bool followRedirects,
+    required int maxRedirects,
+    required bool persistentConnection,
+  })  : _followRedirects = followRedirects,
+        _maxRedirects = maxRedirects,
+        _persistentConnection = persistentConnection;
 
   @override
   Future<Response> newCall(Request request) async {
     final httpClientRequest =
         await HttpClient().openUrl(request.method, request.url);
 
+    httpClientRequest.followRedirects = _followRedirects;
+    httpClientRequest.maxRedirects = _maxRedirects;
+    httpClientRequest.persistentConnection = _persistentConnection;
+
     //sets headers
     request.headers.forEach((name, value) {
-      httpClientRequest.headers.add(name, value);
+      httpClientRequest.headers.set(name, value);
     });
 
-    if (request.body.isNotNull) {
-      if (request.body!.contentType.isNotNull) {
+    if (request.body != null) {
+      if (request.body!.contentType != null) {
         httpClientRequest.headers
             .set('Content-Type', request.body!.contentType.toString());
       }
@@ -44,8 +54,7 @@ class HttpClientAdapter implements ClientAdapter {
     });
 
     final response = Response.Builder()
-        .body(StreamResponseBody(
-            ByteStream(httpResponse), headers.get('Content-Type')))
+        .body(IOStreamResponseBody(httpResponse, headers.get('Content-Type')))
         .request(request)
         .headers(headers)
         .statusCode(httpResponse.statusCode)
@@ -57,14 +66,6 @@ class HttpClientAdapter implements ClientAdapter {
 
   @override
   void close({bool force = false}) {
-    // _inner.close(force: force);
+    _inner.close(force: force);
   }
-}
-
-abstract class ClientAdapter {
-  Future<Response> newCall(Request request);
-
-  ClientAdapter createAdapter();
-
-  void close({bool force = false});
 }

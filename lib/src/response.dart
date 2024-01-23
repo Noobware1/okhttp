@@ -1,7 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dartx/dartx.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:okhttp/src/headers.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response_body.dart';
@@ -70,7 +69,7 @@ sealed class ResponseBuilder {
     _code = response?.statusCode ?? -1;
     _message = response?.message;
     _headers = response?.headers.newBuilder() ?? Headers.Builder();
-    _body = response?.body ?? _EmptyResponseBody();
+    _body = response?.body ?? ResponseBody.empty;
   }
 
   /// Sets the header named [name] to [value]. If this request already has any headers
@@ -145,26 +144,4 @@ sealed class ResponseBuilder {
       message: _message ?? '',
     );
   }
-}
-
-class _EmptyResponseBody implements ResponseBody {
-  @override
-  List<int> get bytes => [];
-
-  @override
-  int get contentLength => -1;
-
-  @override
-  MediaType? get contentType => null;
-
-  @override
-  String get string => '';
-
-  @override
-  Future<ResponseBody> close() {
-    return Future.value(this);
-  }
-
-  @override
-  Stream<String> get charStream => Stream.empty();
 }

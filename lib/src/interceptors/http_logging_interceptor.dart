@@ -1,7 +1,5 @@
 // ignore_for_file: constant_identifier_names
 
-import 'dart:convert';
-
 import 'package:dartx/dartx.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:okhttp/src/dates/date_fromatter.dart';
@@ -127,7 +125,7 @@ class LoggingInterceptor implements Interceptor {
         (contentLength != -1) ? "$contentLength-byte" : "unknown-length";
 
     logger.log(
-        "<-- ${response.statusCode}${(response.message.isEmpty) ? "" : ' ' + response.message} ${response.request.url} (${tookMs}ms${(!logHeaders) ? ", $bodySize body" : ""})");
+        "<-- ${response.statusCode}${(response.message.isEmpty) ? "" : ' ${response.message}'} ${response.request.url} (${tookMs}ms${(!logHeaders) ? ", $bodySize body" : ""})");
 
     if (logHeaders) {
       final headers = response.headers;

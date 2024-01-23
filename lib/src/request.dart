@@ -5,18 +5,17 @@ import 'package:okhttp/src/common/http_method.dart';
 import 'package:okhttp/src/headers.dart';
 import 'package:okhttp/src/request_body.dart';
 
-final class Request {
-  Request._(RequestBuilder builder) {
-    url = builder._url!;
-    method = builder._method;
-    headers = builder._headers.build();
-    body = builder._body;
-  }
+ class Request {
+  Request._(RequestBuilder builder)
+      : url = builder._url!,
+        method = builder._method,
+        headers = builder._headers.build(),
+        body = builder._body;
 
-  late final Uri url;
-  late final String method;
-  late final Headers headers;
-  late final RequestBody? body;
+  final Uri url;
+  final String method;
+  final Headers headers;
+  final RequestBody? body;
 
   static RequestBuilder Builder() => _RequestBuilder();
 
@@ -33,17 +32,16 @@ final class _RequestBuilder extends RequestBuilder {
 }
 
 sealed class RequestBuilder {
-  late Uri? _url;
-  late String _method;
-  late HeadersBuilder _headers;
-  late RequestBody? _body;
+  Uri? _url;
+  String _method;
+  HeadersBuilder _headers;
+  RequestBody? _body;
 
-  RequestBuilder([Request? request]) {
-    _url = request?.url;
-    _method = request?.method ?? 'GET';
-    _headers = request?.headers.newBuilder() ?? Headers.Builder();
-    _body = request?.body;
-  }
+  RequestBuilder([Request? request])
+      : _url = request?.url,
+        _method = request?.method ?? 'GET',
+        _headers = request?.headers.newBuilder() ?? Headers.Builder(),
+        _body = request?.body;
 
   RequestBuilder url(dynamic url) {
     return apply((it) {
