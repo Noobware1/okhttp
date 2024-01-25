@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:dartx/dartx.dart';
 import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/headers.dart';
-import 'package:okhttp/src/okhttp_client.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
 import 'package:okhttp/src/response_body/io_response_body.dart';

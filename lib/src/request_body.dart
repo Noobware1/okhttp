@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:dartx/dartx.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:okhttp/src/utils/utils.dart';
 
@@ -50,7 +49,7 @@ final class _BytesBody extends RequestBody {
 
 extension on MediaType? {
   (Encoding, MediaType?) resloveWithCharSet() {
-    if (isNull) {
+    if (this == null) {
       return (utf8, this);
     }
     final Encoding charSet;
