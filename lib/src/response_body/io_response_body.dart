@@ -13,7 +13,7 @@ class IOStreamResponseBody extends StreamResponseBody {
   @override
   Future<ResponseBody> close() async {
     final response = RealResponseBody(await toBytes(), contentType);
-    await detachSocketCallback();
+    (await detachSocketCallback()).destroy();
     return response;
   }
 }
