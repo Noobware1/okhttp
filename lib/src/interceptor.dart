@@ -2,9 +2,11 @@ import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
 
 abstract class Interceptor {
-  factory Interceptor(Future<Response> Function(Chain chain) intercept) {
+  factory Interceptor.make(Future<Response> Function(Chain chain) intercept) {
     return _Interceptor(intercept);
   }
+
+  Interceptor();
 
   Future<Response> intercept(Chain chain);
 }
