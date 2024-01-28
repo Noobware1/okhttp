@@ -5,3 +5,4 @@ export 'src/interceptors/connect_interceptor.dart';
 export 'src/interceptors/downloading_interceptor.dart';
 export 'src/interceptors/retry_followup_interceptor.dart';
 export 'src/interceptors/response_body_interceptor.dart';
+export 'src/interceptors/proxy_interceptor.dart';
