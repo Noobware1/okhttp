@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_initializing_formals, unnecessary_this, constant_identifier_names
 
-
 import 'package:okhttp/src/auth.dart';
 import 'package:okhttp/src/internet_socket_address.dart';
 
@@ -61,4 +60,3 @@ class Proxy {
     return "$type @ $address";
   }
 }
-

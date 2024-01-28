@@ -1,5 +1,3 @@
-
-
 ///
 /// Quick and dirty pattern to differentiate IP addresses from hostnames. This is an approximation
 /// of Android's private InetAddress#isNumeric API.

@@ -43,6 +43,8 @@ class Response {
   /// and [priorResponse].
   final ResponseBody body;
 
+  String? header(String name) => headers.get(name);
+
   static ResponseBuilder Builder() => _ResponseBuilder();
 
   ResponseBuilder newBuilder() => _ResponseBuilder(this);

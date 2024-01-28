@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-
 extension StringCommon on String {
   int get code => codeUnitAt(0);
 

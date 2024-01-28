@@ -1,10 +1,23 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:dartx/dartx.dart';
+import 'package:okhttp/src/common/map.dart';
 import 'package:okhttp/src/dates/dates.dart';
 
 final class Headers {
   Headers._(this._nameAndValues);
+
+  factory Headers.fromMap(Map<String, String> map) {
+    final headers = caseInsensitiveKeyMap<List<String>>();
+    map.forEach((key, value) {
+      if (headers.containsKey(key)) {
+        headers[key]!.add(value);
+      } else {
+        headers[key] = [value];
+      }
+    });
+    return Headers._(headers);
+  }
 
   final Map<String, List<String>> _nameAndValues;
 
@@ -74,7 +87,7 @@ final class _HeadersBuilder extends HeadersBuilder {
 }
 
 sealed class HeadersBuilder {
-  final Map<String, List<String>> _namesAndValues = {};
+  final Map<String, List<String>> _namesAndValues = caseInsensitiveKeyMap();
 
   HeadersBuilder([Headers? headers]) {
     if (headers != null) {

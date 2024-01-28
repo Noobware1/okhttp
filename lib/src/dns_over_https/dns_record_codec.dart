@@ -37,7 +37,7 @@ class DnsRecordCodec {
     offset++;
 
     Uint8List result = byteData.buffer.asUint8List(0, offset);
-   
+
     return result;
   }
 }
