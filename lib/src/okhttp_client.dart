@@ -8,6 +8,7 @@ import 'package:okhttp/src/call.dart';
 import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/connection/real_call.dart';
 import 'package:okhttp/src/interceptor.dart';
+import 'package:okhttp/src/proxy.dart';
 import 'package:okhttp/src/request.dart';
 
 class OkHttpClient {
@@ -18,10 +19,10 @@ class OkHttpClient {
   // final Authenticator authenticator = Authenticator();
   // final CookieJar cookieJar = CookieJar();
   // final Dns dns = Dns();
-  // final Proxy proxy = Proxy();
   // final ProxySelector proxySelector = ProxySelector();
   // final proxyAuthenticator = Authenticator();
   // final x509TrustManager = X509TrustManager();
+  final Proxy proxy;
   final bool closeResponseBody;
   final bool retryOnConnectionFailure;
   final int callTimeoutMillis;
@@ -56,6 +57,7 @@ class OkHttpClient {
         closeResponseBody = true,
         followRedirects = true,
         maxRedirects = 5,
+        proxy = Proxy.NO_PROXY,
         adapter = HttpClientAdapter(
             followRedirects: true, maxRedirects: 5, persistentConnection: true);
 
@@ -73,7 +75,8 @@ class OkHttpClient {
         persistentConnection = builder._persistentConnection,
         followRedirects = builder._followRedirects,
         maxRedirects = builder._maxRedirects,
-        adapter = builder._adapter;
+        adapter = builder._adapter,
+        proxy = builder._proxy;
 
   final ClientAdapter adapter;
 
@@ -112,6 +115,7 @@ sealed class OkHttpClientBuilder {
   bool _closeResponseBody;
   int _maxRedirects;
   ClientAdapter _adapter;
+  Proxy _proxy;
 
   OkHttpClientBuilder(OkHttpClient client)
       : _retryOnConnectionFailure = client.retryOnConnectionFailure,
@@ -125,6 +129,7 @@ sealed class OkHttpClientBuilder {
         _persistentConnection = client.persistentConnection,
         _followRedirects = client.followRedirects,
         _maxRedirects = client.maxRedirects,
+        _proxy = client.proxy,
         _adapter = client.adapter {
     _interceptors.addAll(client.interceptors);
     _networkInterceptors.addAll(client.networkInterceptors);
@@ -217,6 +222,14 @@ sealed class OkHttpClientBuilder {
   OkHttpClientBuilder addAdapter(ClientAdapter adapter) {
     return apply((it) {
       it._adapter = adapter;
+    });
+  }
+
+  OkHttpClientBuilder proxy(Proxy? proxy) {
+    return apply((it) {
+      if (proxy != null && proxy != Proxy.NO_PROXY) {
+        it._proxy = proxy;
+      }
     });
   }
 

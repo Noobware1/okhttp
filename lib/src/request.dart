@@ -5,7 +5,7 @@ import 'package:okhttp/src/common/http_method.dart';
 import 'package:okhttp/src/headers.dart';
 import 'package:okhttp/src/request_body.dart';
 
- class Request {
+class Request {
   Request._(RequestBuilder builder)
       : url = builder._url!,
         method = builder._method,
@@ -112,12 +112,12 @@ sealed class RequestBuilder {
     RequestBody? body,
   ) {
     return apply((it) {
-      assert(method.isNotEmpty, {"method.isEmpty == true"});
+      assert(method.isNotEmpty, "method.isEmpty == true");
       if (body == null && HttpMethod.requiresRequestBody(method)) {
         body = RequestBody.empty;
-      } else {
+      } else if (body != null) {
         assert(HttpMethod.permitsRequestBody(method),
-            {"method $method must not have a request body."});
+            "method $method must not have a request body.");
       }
       it._method = method;
       it._body = body;

@@ -5,6 +5,7 @@ import 'package:okhttp/src/expections/okhttp_exception.dart';
 import 'package:okhttp/src/interceptor.dart';
 import 'package:okhttp/src/interceptors/bridge_interceptor.dart';
 import 'package:okhttp/src/interceptors/connect_interceptor.dart';
+import 'package:okhttp/src/interceptors/proxy_interceptor.dart';
 import 'package:okhttp/src/interceptors/response_body_interceptor.dart';
 import 'package:okhttp/src/okhttp_client.dart';
 import 'package:okhttp/src/request.dart';
@@ -25,6 +26,7 @@ class RealCall implements Call {
     interceptors.add(ResponseBodyInterceptor());
     // interceptors.add(RetryAndFollowUpInterceptor(client));
     interceptors.add(BridgeInterceptor());
+    interceptors.add(ProxyInterceptor());
     interceptors.addAll(client.networkInterceptors);
     interceptors.add(ConnectInterceptor());
 

@@ -2,9 +2,11 @@ import 'dart:io';
 import 'package:dartx/dartx.dart';
 import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/headers.dart';
+import 'package:okhttp/src/proxy.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
 import 'package:okhttp/src/response_body/io_response_body.dart';
+import 'package:socks5_proxy/socks.dart';
 
 class HttpClientAdapter implements ClientAdapter {
   final bool _followRedirects;
@@ -66,5 +68,19 @@ class HttpClientAdapter implements ClientAdapter {
   @override
   void close({bool force = false}) {
     _inner.close(force: force);
+  }
+
+  void addProxy(Proxy proxy) {
+    if (proxy == Proxy.NO_PROXY) return;
+    if (proxy.type == ProxyType.SOCKS) {
+      SocksTCPClient.assignToHttpClient(_inner, [proxy.toProxySettings()]);
+    }
+  }
+}
+
+extension on Proxy {
+  ProxySettings toProxySettings() {
+    return ProxySettings(address!.address!, address!.port,
+        password: password, username: userName);
   }
 }

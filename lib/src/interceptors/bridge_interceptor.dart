@@ -48,7 +48,9 @@ class BridgeInterceptor implements Interceptor {
     }
 
     final networkRequest = requestBuilder.build();
+
     final networkResponse = await chain.proceed(networkRequest);
+
     final response = networkResponse.newBuilder().request(userRequest).build();
 
     return response;
