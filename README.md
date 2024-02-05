@@ -31,7 +31,6 @@ import 'package:okhttp/request.dart';
 OkHttpClient client = OkHttpClient();
 
 Future<String> get(String url) {
-  RequestBody body = RequestBody.fromString(json, JSON);
   Request request = Request.Builder().url(url).get().build();
 
   final response = client
