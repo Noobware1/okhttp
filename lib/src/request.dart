@@ -23,7 +23,7 @@ class Request {
 
   @override
   String toString() {
-    return 'Request(url: $url, method: $method, headers: ${headers.toList().mapList((e) => '${e.first}: ${e.second}')}, body: $body)';
+    return 'Request(url: $url, method: $method, headers: ${headers.toString(true)}, body: $body)';
   }
 }
 

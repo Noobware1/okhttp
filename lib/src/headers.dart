@@ -2,6 +2,7 @@
 
 import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/common/map.dart';
+import 'package:okhttp/src/common/string.dart';
 import 'package:okhttp/src/dates/dates.dart';
 
 final class Headers {
@@ -55,7 +56,10 @@ final class Headers {
   }
 
   @override
-  String toString() {
+  String toString([bool list = false]) {
+    if (list) {
+      return toList().mapList((e) => '${e.first}: ${e.second}').toString();
+    }
     final stringBuffer = StringBuffer();
     _nameAndValues.forEach((key, value) {
       for (final e in value) {
@@ -113,6 +117,18 @@ sealed class HeadersBuilder {
     });
   }
 
+  /// Add a header with the specified name and value. Does validation of header names, allowing
+  /// non-ASCII values.
+  HeadersBuilder addUnsafeNonAscii(
+    String name,
+    String value,
+  ) {
+    return apply((it) {
+      it._headersCheckName(name);
+      it._namesAndValues[name] = [value.trim()];
+    });
+  }
+
   HeadersBuilder addAll(Headers headers) {
     return apply((it) {
       it._namesAndValues.addAll(headers._nameAndValues);
@@ -134,6 +150,17 @@ sealed class HeadersBuilder {
   HeadersBuilder removeAll(String name) => apply((it) {
         it._namesAndValues.remove(name);
       });
+
+  void _headersCheckName(String name) {
+    assert(name.isNotEmpty, "name is empty");
+    for (var i = 0; i < name.length; i++) {
+      final c = name[i].code;
+      assert(
+        c >= '\u0021'.code && c <= '\u007e'.code,
+        "Unexpected char 0x${String.fromCharCode(c)} at $i in header name: $name",
+      );
+    }
+  }
 
   Headers build() => Headers._(_namesAndValues);
 

@@ -9,4 +9,8 @@ extension StreamSinkExtensions on StreamSink<List<int>> {
   void writeUtf8(String string) {
     return add(utf8.encode(string));
   }
+
+  void write(List<int> bytes) {
+    return add(bytes);
+  }
 }

@@ -43,6 +43,8 @@ class Response {
   /// and [priorResponse].
   final ResponseBody body;
 
+  bool get isSuccessful => statusCode >= 200 && statusCode <= 299;
+
   String? header(String name) => headers.get(name);
 
   static ResponseBuilder Builder() => _ResponseBuilder();
