@@ -25,18 +25,21 @@ Get a URL
 ---------
 
 ```dart
-import 'package:okhttp/client.dart';
+import 'package:okhttp/okhttp.dart';
 import 'package:okhttp/request.dart';
+
+final MediaType JSON = MediaType.parse("application/json");
 
 OkHttpClient client = OkHttpClient();
 
-Future<String> run(String url) {
-  Request request = Request(url: url);
+Future<String> post(String url, String json) async {
+  RequestBody body = RequestBody.fromString(json, JSON);
+  Request request = Request.Builder().url(url).post(body).build();
 
   final response = client
       .newCall(request)
       .execute()
-      .then((value) => value.text)
+      .then((value) => value.body.string)
       .catchError((e, s) => 'Error: $e, StackTrace: $s');
 
   return response;
@@ -48,26 +51,26 @@ Post to a Server
 ----------------
 
 ```dart
-import 'package:okhttp/client.dart';
-import 'package:okhttp/media_type.dart';
+import 'package:okhttp/okhttp.dart';
 import 'package:okhttp/request.dart';
-import 'package:okhttp/request_body.dart';
 
 final MediaType JSON = MediaType.parse("application/json");
 
 OkHttpClient client = OkHttpClient();
 
-Future<String> post(String url, String json) {
+Future<String> post(String url, String json) async {
   RequestBody body = RequestBody.fromString(json, JSON);
-  Request request = Request(url: url, method: 'POST')..body = body;
+  Request request = Request.Builder().url(url).post(body).build();
+  try {
+    final String response =
+        await client.newCall(request).execute().then((response) {
+      return response.body.string;
+    });
 
-  final response = client
-      .newCall(request)
-      .execute()
-      .then((value) => value.text)
-      .catchError((e, s) => 'Error: $e, StackTrace: $s');
-
-  return response;
+    return response;
+  } catch (e) {
+    return e.toString();
+  }
 }
 
 ```
