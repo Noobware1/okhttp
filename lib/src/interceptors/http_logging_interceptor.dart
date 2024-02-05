@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:dartx/dartx.dart';
+import 'package:nice_dart/nice_dart.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:okhttp/src/dates/date_fromatter.dart';
 import 'package:okhttp/src/headers.dart';

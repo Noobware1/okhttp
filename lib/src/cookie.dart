@@ -1,6 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dartx/dartx.dart'
+import 'package:nice_dart/nice_dart.dart'
     hide OrEmptyIterable, OrEmptyMap, NullableStringExtensions;
 import 'package:okhttp/src/common/host_name_commons.dart';
 import 'package:okhttp/src/common/long.dart';

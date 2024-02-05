@@ -1,4 +1,4 @@
-import 'package:dartx/dartx.dart';
+import 'package:nice_dart/nice_dart.dart';
 
 bool isSensitiveHeader(String key) {
   return key.equals("Authorization", ignoreCase: true) ||

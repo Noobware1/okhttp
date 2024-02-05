@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:dartx/dartx.dart';
+import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/headers.dart';
 import 'package:okhttp/src/proxy.dart';

@@ -10,9 +10,9 @@ environment:
 dependencies:
   async: ^2.11.0
   http_parser: ^4.0.2
-  dartx:
+  nice_dart:
     git:
-      url: https://github.com/Noobware1/dartx.git
+      url: https://github.com/Noobware1/nice_dart.git
       ref: master
   socks5_proxy: ^1.0.4
 

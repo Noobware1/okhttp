@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dartx/dartx.dart';
+import 'package:nice_dart/nice_dart.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:okhttp/src/interceptor.dart';
 import 'package:okhttp/src/response.dart';

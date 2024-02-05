@@ -1,6 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:dartx/dartx.dart';
+import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/common/map.dart';
 import 'package:okhttp/src/dates/dates.dart';
 
