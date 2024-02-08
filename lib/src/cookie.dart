@@ -1,10 +1,8 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:nice_dart/nice_dart.dart'
-    hide OrEmptyIterable, OrEmptyMap, NullableStringExtensions;
+import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/common/host_name_commons.dart';
 import 'package:okhttp/src/common/long.dart';
-import 'package:okhttp/src/common/regex.dart';
 import 'package:okhttp/src/common/string.dart';
 import 'package:okhttp/src/common/url_common.dart';
 import 'package:okhttp/src/dates/dates.dart';
@@ -162,7 +160,7 @@ class Cookie {
         result += '; max-age=0';
       } else {
         result +=
-            '; expires=${DateTime.fromMillisecondsSinceEpoch(expiresAt).toHttpDateString()}';
+            '; expires=${DateTime.fromMillisecondsSinceEpoch(expiresAt, isUtc: true).toHttpDateString()}';
       }
     }
     if (!hostOnly) {
@@ -208,7 +206,7 @@ class Cookie {
   }
 
   static List<Cookie> parseAll(Uri url, Headers headers) {
-    final cookies = headers.values("Set-Cookie")?.let((it) {
+    return (headers.values("Set-Cookie")?.let((it) {
       List<Cookie>? cookies;
       for (var i = 0; i < it.length; i++) {
         try {
@@ -221,8 +219,7 @@ class Cookie {
       }
       if (cookies != null) return List<Cookie>.of(cookies, growable: false);
       return List<Cookie>.empty(growable: true);
-    });
-    return cookies.orEmpty();
+    })).orEmpty();
   }
 
   static Cookie? parse(Uri url, String setCookie) {
@@ -273,11 +270,11 @@ class Cookie {
       switch (attributeName.toLowerCase()) {
         case 'expires':
           try {
-            expiresAt = parseExpires(attributeValue, 0, attributeValue.length);
+            expiresAt = parseExpires(attributeValue, 0, attributeValue.length)
+                .millisecondsSinceEpoch;
 
             persistent = true;
-          } catch (_, s) {
-            print('$_\n$s');
+          } catch (_) {
             // Ignore this attribute, it isn't recognizable as a date.
           }
 
@@ -371,7 +368,7 @@ class Cookie {
   }
 
   /// Parse a date as specified in RFC 6265, section 5.1.1.
-  static int parseExpires(String s, int pos, int limit) {
+  static DateTime parseExpires(String s, int pos, int limit) {
     pos = dateCharacterOffset(s, pos, limit, false);
 
     var hour = -1;
@@ -380,22 +377,22 @@ class Cookie {
     var dayOfMonth = -1;
     var month = -1;
     var year = -1;
-    final matcher = BetterRegex.fromRegex(_TIME_PATTERN).matcher(s);
+    var matcher = NiceRegExp.fromRegExp(_TIME_PATTERN).matcher(s);
 
     while (pos < limit) {
       final end = dateCharacterOffset(s, pos + 1, limit, true);
       matcher.region(pos, end);
-      if (hour == -1 && matcher.usePattern(_TIME_PATTERN).matches()) {
+      if (hour == -1 && matcher.useRegExp(_TIME_PATTERN).hasMatch()) {
         hour = matcher.group(1).toInt();
         minute = matcher.group(2).toInt();
         second = matcher.group(3).toInt();
       } else if (dayOfMonth == -1 &&
-          matcher.usePattern(_DAY_OF_MONTH_PATTERN).matches()) {
+          matcher.useRegExp(_DAY_OF_MONTH_PATTERN).hasMatch()) {
         dayOfMonth = matcher.group(1).toInt();
-      } else if (month == -1 && matcher.usePattern(_MONTH_PATTERN).matches()) {
+      } else if (month == -1 && matcher.useRegExp(_MONTH_PATTERN).hasMatch()) {
         final monthString = matcher.group(1).toLowerCase();
         month = _MONTH_PATTERN.pattern.indexOf(monthString) ~/ 4;
-      } else if (year == -1 && matcher.usePattern(_YEAR_PATTERN).matches()) {
+      } else if (year == -1 && matcher.useRegExp(_YEAR_PATTERN).hasMatch()) {
         year = matcher.group(1).toInt();
       }
       pos = dateCharacterOffset(s, end + 1, limit, false);
@@ -413,15 +410,15 @@ class Cookie {
     assert(minute >= 0 && minute <= 59);
     assert(second >= 0 && second <= 59);
 
-    return DateTime(
+    return DateTime.utc(
       year,
-      month - 1,
+      month + 1,
       dayOfMonth,
       hour,
       minute,
       second,
       0,
-    ).millisecondsSinceEpoch;
+    );
   }
 
   /// Returns the index of the next date character in `input`, or if `invert` the index

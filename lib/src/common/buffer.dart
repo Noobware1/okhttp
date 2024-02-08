@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+/// A Common interface to avoid annoying type checks
 class Buffer implements StreamSink<List<int>> {
   final List<int> _buffer = [];
 

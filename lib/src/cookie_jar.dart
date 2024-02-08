@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:okhttp/src/cookie.dart';
 
 /// Provides **policy** and **persistence** for HTTP cookies.
@@ -13,7 +15,7 @@ import 'package:okhttp/src/cookie.dart';
 ///
 /// [rfc_6265_53]: https://tools.ietf.org/html/rfc6265#section-5.3
 ///
-abstract interface class CookieJar {
+abstract class CookieJar {
   /// Saves [cookies] from an HTTP response to this store according to this jar's policy.
   ///
   /// Note that this method may be called a second time for a single HTTP response if the response
@@ -43,6 +45,6 @@ class _NoCookies implements CookieJar {
 
   @override
   List<Cookie> loadForRequest(Uri url) {
-    return List.empty();
+    return List.empty(growable: true);
   }
 }

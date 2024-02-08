@@ -9,12 +9,11 @@ void main() {
   final client = OkHttpClient();
 
   // Create a multipart request body with form parameters and a file
-  final requestBody =
-      MultipartBody.Builder("021df8c2-5c3c-4eaa-b953-31e65af42d70")
-          .setType(MultipartBody.FORM)
-          .addFormDataPart("param1", "value1")
-          .addFormDataPart("param2", "value2")
-          .build();
+  final requestBody = MultipartBody.Builder()
+      .setType(MultipartBody.FORM)
+      .addFormDataPart("param1", "value1")
+      .addFormDataPart("param2", "value2")
+      .build();
 
   // Create the request with the multipart body
   final request = Request.Builder().url(apiUrl).post(requestBody).build();

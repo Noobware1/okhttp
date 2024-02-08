@@ -1,3 +1,5 @@
+import 'package:nice_dart/nice_dart.dart';
+import 'package:okhttp/okhttp.dart';
 import 'package:okhttp/src/connection/real_chain.dart';
 import 'package:okhttp/src/constants/useragent.dart';
 import 'package:okhttp/src/interceptor.dart';
@@ -9,8 +11,9 @@ import 'package:okhttp/src/response.dart';
 /// response.
 ///
 class BridgeInterceptor implements Interceptor {
-  BridgeInterceptor();
+  BridgeInterceptor(this.cookieJar);
 
+  final CookieJar cookieJar;
   @override
   Future<Response> intercept(Chain chain) async {
     chain as RealInterceptorChain;
@@ -42,6 +45,10 @@ class BridgeInterceptor implements Interceptor {
     if (userRequest.headers["Accept - Encoding"] == null) {
       requestBuilder.header("Accept-Encoding", "gzip");
     }
+    final cookies = cookieJar.loadForRequest(userRequest.url);
+    if (cookies.isNotEmpty) {
+      requestBuilder.header("Cookie", _cookieHeader(cookies));
+    }
 
     if (userRequest.headers["User-Agent"] == null) {
       requestBuilder.header("User-Agent", USER_AGENT);
@@ -51,8 +58,34 @@ class BridgeInterceptor implements Interceptor {
 
     final networkResponse = await chain.proceed(networkRequest);
 
+    cookieJar.receiveHeaders(networkRequest.url, networkResponse.headers);
+
     final response = networkResponse.newBuilder().request(userRequest).build();
 
     return response;
+  }
+
+  /// Returns a 'Cookie' HTTP request header with all cookies, like `a=b; c=d`.
+  String _cookieHeader(List<Cookie> cookies) {
+    return buildString((it) {
+      cookies.forEachIndexed((index, cookie) {
+        if (index > 0) it.write("; ");
+        it.write("${cookie.name}=${cookie.value}");
+      });
+    });
+  }
+}
+
+extension on CookieJar {
+  void receiveHeaders(
+    Uri url,
+    Headers headers,
+  ) {
+    if (this == CookieJar.NO_COOKIES) return;
+
+    final cookies = Cookie.parseAll(url, headers);
+    if (cookies.isEmpty) return;
+
+    return saveFromResponse(url, cookies);
   }
 }

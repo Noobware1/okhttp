@@ -5,7 +5,8 @@ import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
 import 'package:nice_dart/nice_dart.dart';
-import 'package:okhttp/src/buffer.dart';
+import 'package:okhttp/src/common/buffer.dart';
+import 'package:okhttp/src/common/byte_extensions.dart';
 import 'package:okhttp/src/common/stream_sink.dart';
 import 'package:okhttp/src/common/string.dart';
 import 'package:okhttp/src/common/uuid.dart';
@@ -77,7 +78,7 @@ class MultipartBody extends RequestBody {
     var byteCount = 0;
 
     if (countBytes) {
-      sink = Buffer();
+      sink ??= Buffer();
     }
     final boundaryByteString = this.boundaryByteString;
     for (var p = 0; p < parts.length; p++) {
@@ -263,9 +264,9 @@ sealed class MultipartBodyBuilder {
   }
 }
 
-final _COLONSPACE = [':'.code, ' '.code];
-final _CRLF = ['\r'.code, '\n'.code];
-final _DASHDASH = ['-'.code, '-'.code];
+final _COLONSPACE = [':'.code.toByte(), ' '.code.toByte()];
+final _CRLF = ['\r'.code.toByte(), '\n'.code.toByte()];
+final _DASHDASH = ['-'.code.toByte(), '-'.code.toByte()];
 
 extension on StringSink {
   /// Appends a quoted-string to a StringBuilder.

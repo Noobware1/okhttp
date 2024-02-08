@@ -1,34 +1,31 @@
 import 'dart:io';
 import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/client_adapter.dart';
+import 'package:okhttp/src/dns.dart';
 import 'package:okhttp/src/headers.dart';
+import 'package:okhttp/src/okhttp_client.dart';
 import 'package:okhttp/src/proxy.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
 import 'package:okhttp/src/response_body/io_response_body.dart';
-import 'package:socks5_proxy/socks.dart';
+import 'package:socks5_proxy/socks_client.dart';
 
+// pretty bad implementation, but it works
 class HttpClientAdapter implements ClientAdapter {
-  final bool _followRedirects;
-  final int _maxRedirects;
-  final bool _persistentConnection;
   final _inner = HttpClient();
-  HttpClientAdapter({
-    required bool followRedirects,
-    required int maxRedirects,
-    required bool persistentConnection,
-  })  : _followRedirects = followRedirects,
-        _maxRedirects = maxRedirects,
-        _persistentConnection = persistentConnection;
+
+  HttpClientAdapter();
 
   @override
-  Future<Response> newCall(Request request) async {
+  Future<Response> newCall(OkHttpClient client, Request request) async {
     final httpClientRequest =
         await HttpClient().openUrl(request.method, request.url);
 
-    httpClientRequest.followRedirects = _followRedirects;
-    httpClientRequest.maxRedirects = _maxRedirects;
-    httpClientRequest.persistentConnection = _persistentConnection;
+    httpClientRequest.followRedirects = client.followRedirects;
+    httpClientRequest.maxRedirects = client.maxRedirects;
+    httpClientRequest.persistentConnection = client.persistentConnection;
+
+    addProxy(client.proxy);
 
     //sets headers
     request.headers.forEach((name, value) {
@@ -74,6 +71,23 @@ class HttpClientAdapter implements ClientAdapter {
     if (proxy == Proxy.NO_PROXY) return;
     if (proxy.type == ProxyType.SOCKS) {
       SocksTCPClient.assignToHttpClient(_inner, [proxy.toProxySettings()]);
+    }
+    if (proxy.type == ProxyType.HTTP) {
+      _inner.findProxy = (uri) {
+        return 'PROXY ${proxy.address!}:${proxy.address!.port}';
+      };
+      if (proxy.userName != null && proxy.password != null) {
+        _inner.authenticate = (url, scheme, realm) async {
+          _inner.addCredentials(url, realm!,
+              HttpClientBasicCredentials(proxy.userName!, proxy.password!));
+          return true;
+        };
+      }
+    }
+    if (proxy.type == ProxyType.DIRECT) {
+      _inner.findProxy = (uri) {
+        return 'DIRECT ${proxy.address!}:${proxy.address!.port}';
+      };
     }
   }
 }

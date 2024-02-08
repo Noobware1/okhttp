@@ -1,12 +1,12 @@
 import 'package:okhttp/interceptor.dart';
 import 'package:okhttp/okhttp.dart';
-import 'package:okhttp/src/json_body.dart';
-import 'package:okhttp/src/okhttp_client.dart';
-import 'package:okhttp/src/request.dart';
+import 'package:okhttp/request.dart';
 
 void main(List<String> args) {
-  final body =
-      JsonBody.Builder().add('title', 'foo').add('body', 'bar').build();
+  final body = RequestBody.fromMap({
+    'title': 'foo',
+    'body': 'bar',
+  });
 
   final request = Request.Builder()
       .url('https://jsonplaceholder.typicode.com/posts')
@@ -20,6 +20,6 @@ void main(List<String> args) {
 
   client.newCall(request).execute().then((response) {
     client.destroy();
-    print(response.body.string);
+    print(response.headers);
   });
 }

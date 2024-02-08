@@ -2,6 +2,8 @@
 
 import 'dart:io';
 
+import 'package:nice_dart/nice_dart.dart';
+
 ///
 /// A domain name service that resolves IP addresses for host names. Most applications will use the
 /// [system DNS service][SYSTEM], which is the default. Some applications may provide their own
@@ -22,7 +24,7 @@ abstract class Dns {
   ///
   Future<List<InternetAddress>> lookup(String hostname);
 
-  static const SYSYTEM = DnsSystem();
+  static const SYSTEM = DnsSystem();
 }
 
 class DnsSystem extends Dns {
@@ -44,11 +46,18 @@ class DnsSystem extends Dns {
 }
 
 class UnknownHostException implements Exception {
-  final String cause;
-  UnknownHostException(this.cause);
+  String? cause;
+  final String host;
+  UnknownHostException(this.host);
+
+  UnknownHostException initCause(String cause) {
+    return apply((it) {
+      it.cause = cause;
+    });
+  }
 
   @override
   String toString() {
-    return 'UnknownHostException: $cause';
+    return 'UnknownHostException: $host; Casue: $cause';
   }
 }

@@ -7,6 +7,9 @@ import 'package:okhttp/src/adapters/http_client_adapter.dart';
 import 'package:okhttp/src/call.dart';
 import 'package:okhttp/src/client_adapter.dart';
 import 'package:okhttp/src/connection/real_call.dart';
+import 'package:okhttp/src/cookie_jar.dart';
+import 'package:okhttp/src/cookies/default_cookie_jar.dart';
+import 'package:okhttp/src/dns.dart';
 import 'package:okhttp/src/interceptor.dart';
 import 'package:okhttp/src/proxy.dart';
 import 'package:okhttp/src/request.dart';
@@ -17,12 +20,13 @@ class OkHttpClient {
   final List<Interceptor> networkInterceptors;
 
   // final Authenticator authenticator = Authenticator();
-  // final CookieJar cookieJar = CookieJar();
   // final Dns dns = Dns();
   // final ProxySelector proxySelector = ProxySelector();
   // final proxyAuthenticator = Authenticator();
   // final x509TrustManager = X509TrustManager();
+  final CookieJar cookieJar;
   final Proxy proxy;
+  final Dns dns;
   final bool closeResponseBody;
   final bool retryOnConnectionFailure;
   final int callTimeoutMillis;
@@ -58,8 +62,9 @@ class OkHttpClient {
         followRedirects = true,
         maxRedirects = 5,
         proxy = Proxy.NO_PROXY,
-        adapter = HttpClientAdapter(
-            followRedirects: true, maxRedirects: 5, persistentConnection: true);
+        dns = Dns.SYSTEM,
+        adapter = HttpClientAdapter(),
+        cookieJar = ShittyCookieJar();
 
   OkHttpClient._(OkHttpClientBuilder builder)
       : interceptors = builder.interceptors,
@@ -75,8 +80,10 @@ class OkHttpClient {
         persistentConnection = builder._persistentConnection,
         followRedirects = builder._followRedirects,
         maxRedirects = builder._maxRedirects,
+        proxy = builder._proxy,
+        dns = builder._dns,
         adapter = builder._adapter,
-        proxy = builder._proxy;
+        cookieJar = builder._cookieJar;
 
   final ClientAdapter adapter;
 
@@ -116,6 +123,8 @@ sealed class OkHttpClientBuilder {
   int _maxRedirects;
   ClientAdapter _adapter;
   Proxy _proxy;
+  Dns _dns;
+  CookieJar _cookieJar;
 
   OkHttpClientBuilder(OkHttpClient client)
       : _retryOnConnectionFailure = client.retryOnConnectionFailure,
@@ -130,6 +139,8 @@ sealed class OkHttpClientBuilder {
         _followRedirects = client.followRedirects,
         _maxRedirects = client.maxRedirects,
         _proxy = client.proxy,
+        _dns = client.dns,
+        _cookieJar = client.cookieJar,
         _adapter = client.adapter {
     _interceptors.addAll(client.interceptors);
     _networkInterceptors.addAll(client.networkInterceptors);
@@ -167,6 +178,12 @@ sealed class OkHttpClientBuilder {
   OkHttpClientBuilder callTimeoutMillis(int callTimeoutMillis) {
     return apply((it) {
       it._callTimeoutMillis = callTimeoutMillis;
+    });
+  }
+
+  OkHttpClientBuilder dns(Dns dns) {
+    return apply((it) {
+      it._dns = dns;
     });
   }
 
@@ -230,6 +247,12 @@ sealed class OkHttpClientBuilder {
       if (proxy != null && proxy != Proxy.NO_PROXY) {
         it._proxy = proxy;
       }
+    });
+  }
+
+  OkHttpClientBuilder cookieJar(CookieJar cookieJar) {
+    return apply((it) {
+      it._cookieJar = cookieJar;
     });
   }
 

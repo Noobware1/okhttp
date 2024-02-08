@@ -1,4 +1,5 @@
 import 'package:http_parser/http_parser.dart';
+part 'package:okhttp/src/common/response_body_common.dart';
 
 abstract class ResponseBody {
   const ResponseBody();
@@ -13,23 +14,5 @@ abstract class ResponseBody {
 
   Stream<String> get charStream;
 
-  static const empty = _EmptyResponseBody();
-}
-
-class _EmptyResponseBody implements ResponseBody {
-  const _EmptyResponseBody();
-  @override
-  List<int> get bytes => [];
-
-  @override
-  int get contentLength => -1;
-
-  @override
-  MediaType? get contentType => null;
-
-  @override
-  String get string => '';
-
-  @override
-  Stream<String> get charStream => Stream.empty();
+  static const ResponseBody empty = _EmptyResponseBody();
 }

@@ -69,11 +69,3 @@ extension UrlCommonOnUri on Uri {
 
   String get encodedPath => encodedPathSegments.join("/");
 }
-
-void main(List<String> args) {
-  // final uri = Uri.parse(
-  //     "https://www.example.com/path/!^E^!@&(E#&(!&@()segment1/#\$&!\$(&!@&&\$!~segment2/page.html");
-  // print(uri.pathSegments);
-
-  // print(uri.);
-}

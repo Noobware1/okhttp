@@ -166,8 +166,3 @@ extension OfControlOrNonAscii on String {
     return start;
   }
 }
-
-void main(List<String> args) {
-  final inputString1 = "   \tHello, \nworld!";
-  print(inputString1.indexOfFirstNonAsciiWhitespace());
-}

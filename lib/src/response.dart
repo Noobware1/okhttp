@@ -4,6 +4,7 @@ import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/headers.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response_body.dart';
+part 'package:okhttp/src/common/response_common.dart';
 
 class Response {
   Response._({
@@ -43,27 +44,23 @@ class Response {
   /// and [priorResponse].
   final ResponseBody body;
 
-  bool get isSuccessful => statusCode >= 200 && statusCode <= 299;
+  bool get isSuccessful => commonIsSuccessful;
 
-  String? header(String name) => headers.get(name);
+  String? header(String name) => commonHeader(name);
 
-  static ResponseBuilder Builder() => _ResponseBuilder();
+  static ResponseBuilder Builder() => _CommonBuilder();
 
-  ResponseBuilder newBuilder() => _ResponseBuilder(this);
-}
-
-class _ResponseBuilder extends ResponseBuilder {
-  _ResponseBuilder([Response? response]) : super(response);
+  ResponseBuilder newBuilder() => _CommonBuilder(this);
 }
 
 sealed class ResponseBuilder {
   late Request? _request;
-  // late Protocol? _protocol;
   late int _code;
   late String? _message;
-  //  late Handshake? _handshake;
   late HeadersBuilder _headers;
   late ResponseBody _body;
+  // late Protocol? _protocol;
+  // late Handshake? _handshake;
   // late   _sentRequestAtMillis: Long = 0
   // late   _receivedResponseAtMillis: Long = 0
   // late   _exchange: Exchange? = null
@@ -78,74 +75,27 @@ sealed class ResponseBuilder {
 
   /// Sets the header named [name] to [value]. If this request already has any headers
   /// with that name, they are all replaced.
-  ResponseBuilder header(
-    String name,
-    String value,
-  ) {
-    return apply((it) {
-      it._headers.set(name, value);
-    });
-  }
+  ResponseBuilder header(String name, String value) =>
+      commonHeader(name, value);
 
   /// Adds a header with [name] to [value]. Prefer this method for multiply-valued
   /// headers like "Set-Cookie".
-  ResponseBuilder addHeader(
-    String name,
-    String value,
-  ) {
-    return apply((it) {
-      it._headers.add(name, value);
-    });
-  }
+  ResponseBuilder addHeader(String name, String value) =>
+      commonAddHeader(name, value);
 
   /// Removes all headers named [name] on this builder.
-  ResponseBuilder removeHeader(String name) {
-    return apply((it) {
-      it._headers.removeAll(name);
-    });
-  }
+  ResponseBuilder removeHeader(String name) => commonRemoveHeader(name);
 
-  ResponseBuilder statusCode(int statusCode) {
-    return apply((it) {
-      it._code = statusCode;
-    });
-  }
+  ResponseBuilder statusCode(int statusCode) => commonStatusCode(statusCode);
 
   /// Removes all headers on this builder and adds [headers].
-  ResponseBuilder headers(Headers headers) {
-    return apply((it) {
-      it._headers = headers.newBuilder();
-    });
-  }
+  ResponseBuilder headers(Headers headers) => commonHeaders(headers);
 
-  ResponseBuilder request(Request request) {
-    return apply((it) {
-      it._request = request;
-    });
-  }
+  ResponseBuilder request(Request request) => commonRequest(request);
 
-  ResponseBuilder body(ResponseBody body) {
-    return apply((it) {
-      it._body = body;
-    });
-  }
+  ResponseBuilder body(ResponseBody body) => commonBody(body);
 
-  ResponseBuilder message(String message) {
-    return apply((it) {
-      it._message = message;
-    });
-  }
+  ResponseBuilder message(String message) => commonMessage(message);
 
-  Response build() {
-    assert(_request != null, "request == null");
-    assert(_code >= 0, "code < 0: $_code");
-
-    return Response._(
-      request: _request!,
-      statusCode: _code,
-      headers: _headers.build(),
-      body: _body,
-      message: _message ?? '',
-    );
-  }
+  Response build() => commonBuild();
 }

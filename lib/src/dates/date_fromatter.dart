@@ -132,10 +132,3 @@ class DateFormatter {
   };
 }
 
-void main(List<String> args) {
-  //Sat, 21 Oct 2023 07:28:00 GMT;
-  // print(DateFormatter(DateTime.now()).format());
-
-  // print(DateFormatter(DateTime.fromMillisecondsSinceEpoch(-62206849920000))
-  //     .format());
-}

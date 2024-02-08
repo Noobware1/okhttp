@@ -10,7 +10,7 @@ enum ProxyType {
   /// Represents proxy for high level protocols such as HTTP or FTP.
   HTTP,
 
-  /// Represents a SOCKS (V4 or V5) proxy.
+  /// Represents a SOCKS (V5) proxy.
   SOCKS;
 
   @override

@@ -7,6 +7,6 @@ class ConnectInterceptor implements Interceptor {
   Future<Response> intercept(Chain chain) async {
     final realchain = chain as RealInterceptorChain;
     final request = chain.request;
-    return realchain.adapter.newCall(request);
+    return realchain.adapter.newCall(chain.call.client, request);
   }
 }

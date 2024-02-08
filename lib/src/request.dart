@@ -4,6 +4,7 @@ import 'package:nice_dart/nice_dart.dart';
 import 'package:okhttp/src/common/http_method.dart';
 import 'package:okhttp/src/headers.dart';
 import 'package:okhttp/src/request_body.dart';
+part 'package:okhttp/src/common/request_common.dart';
 
 class Request {
   Request._(RequestBuilder builder)
@@ -17,18 +18,14 @@ class Request {
   final Headers headers;
   final RequestBody? body;
 
-  static RequestBuilder Builder() => _RequestBuilder();
+  static RequestBuilder Builder() => _CommonRequestBuilder();
 
-  RequestBuilder newBuilder() => _RequestBuilder(this);
+  RequestBuilder newBuilder() => _CommonRequestBuilder(this);
 
   @override
   String toString() {
     return 'Request(url: $url, method: $method, headers: ${headers.toString(true)}, body: $body)';
   }
-}
-
-final class _RequestBuilder extends RequestBuilder {
-  _RequestBuilder([Request? request]) : super(request);
 }
 
 sealed class RequestBuilder {
@@ -43,114 +40,46 @@ sealed class RequestBuilder {
         _headers = request?.headers.newBuilder() ?? Headers.Builder(),
         _body = request?.body;
 
-  RequestBuilder url(dynamic url) {
-    return apply((it) {
-      if (url is Uri) {
-        it._url = url;
-      } else if (url is String) {
-        it._url = Uri.parse(url);
-      } else {
-        throw ArgumentError.value(url, 'url', 'must be a Uri or a String');
-      }
-    });
-  }
+  RequestBuilder url(dynamic url) => commonUrl(url);
 
   /// Sets the header named [name] to [value]. If this request already has any headers
   /// with that name, they are all replaced.
-  RequestBuilder header(
-    String name,
-    String value,
-  ) {
-    return apply((it) {
-      it._headers.set(name, value);
-    });
-  }
+  RequestBuilder header(String name, String value) => commonHeader(name, value);
 
   /// Adds a header with [name] and [value]. Prefer this method for multiply-valued
   /// headers like "Cookie".
   ///
   /// Note that for some headers including `Content-Length` and `Content-Encoding`,
   /// OkHttp may replace [value] with a header derived from the request body.
-  RequestBuilder addHeader(
-    String name,
-    String value,
-  ) {
-    return apply((it) {
-      it._headers.add(name, value);
-    });
-  }
+  RequestBuilder addHeader(String name, String value) =>
+      commonAddHeader(name, value);
 
   /// Removes all headers named [name] on this builder.
-  RequestBuilder removeHeader(String name) {
-    return apply((it) {
-      it._headers.removeAll(name);
-    });
-  }
+  RequestBuilder removeHeader(String name) => commonRemoveHeader(name);
 
   /// Removes all headers on this builder and adds [headers].
-  RequestBuilder headers(Headers headers) {
-    return apply((it) {
-      it._headers = Headers.Builder();
-      it._headers.addAll(headers);
-    });
-  }
+  RequestBuilder headers(Headers headers) => commonHeaders(headers);
 
-  RequestBuilder get() => method("GET", null);
+  RequestBuilder get() => commonGet();
 
-  RequestBuilder head() => method("HEAD", null);
+  RequestBuilder head() => commonHead();
 
-  RequestBuilder post(RequestBody? body) => method("POST", body);
+  RequestBuilder post(RequestBody? body) => commonPost(body);
 
-  RequestBuilder delete(RequestBody? body) => method("DELETE", body);
+  RequestBuilder delete(RequestBody? body) => commonDelete(body);
 
-  RequestBuilder put(RequestBody? body) => method("PUT", body);
+  RequestBuilder put(RequestBody? body) => commonPut(body);
 
-  RequestBuilder patch(RequestBody? body) => method("PATCH", body);
+  RequestBuilder patch(RequestBody? body) => commonPatch(body);
 
-  RequestBuilder method(
-    String method,
-    RequestBody? body,
-  ) {
-    return apply((it) {
-      assert(method.isNotEmpty, "method.isEmpty == true");
-      if (body == null && HttpMethod.requiresRequestBody(method)) {
-        body = RequestBody.empty;
-      } else if (body != null) {
-        assert(HttpMethod.permitsRequestBody(method),
-            "method $method must not have a request body.");
-      }
-      it._method = method;
-      it._body = body;
-    });
-  }
+  RequestBuilder method(String method, RequestBody? body) =>
+      commonMethod(method, body);
 
-  RequestBuilder addQueryParameter(String key, String value) {
-    return apply((it) {
-      it._url = it._url?.addQueryParameter(key, value);
-    });
-  }
+  RequestBuilder addQueryParameter(String key, String value) =>
+      commonAddQueryParameter(key, value);
 
-  RequestBuilder addQueryParameterAll(Map<String, String> parameters) {
-    return apply((it) {
-      if (it._url != null) {
-        parameters.forEach((key, value) {
-          it._url = it._url!.addQueryParameter(key, value);
-        });
-      }
-    });
-  }
+  RequestBuilder addQueryParameterAll(Map<String, String> parameters) =>
+      commonAddQueryParameterAll(parameters);
 
-  Request build() {
-    assert(_url != null, {'url == null'});
-    return Request._(this);
-  }
-}
-
-extension on Uri {
-  Uri addQueryParameter(String key, String value) {
-    var queryParameters = Map<String, String>.from(this.queryParameters);
-    queryParameters[key] = value;
-
-    return replace(queryParameters: queryParameters);
-  }
+  Request build() => commonBuild();
 }
