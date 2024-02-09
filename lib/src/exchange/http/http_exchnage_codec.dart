@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:okhttp/src/exchange/exchnage_codec.dart';
 import 'package:okhttp/src/exchange/http/http_carrier.dart';
 import 'package:okhttp/src/headers.dart';
-import 'package:okhttp/src/okhttp_client.dart';
 import 'package:okhttp/src/request.dart';
 import 'package:okhttp/src/response.dart';
 

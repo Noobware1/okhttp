@@ -25,6 +25,9 @@ class DateFormatter {
       buffer.write(weekday);
       buffer.write(', ');
     }
+    if(day < 10) {
+      buffer.write('0');
+    }
     buffer.write(day);
     buffer.write(' ');
     buffer.write(month);

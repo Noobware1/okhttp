@@ -26,19 +26,6 @@ class Route {
     //   (Protocol.H2_PRIOR_KNOWLEDGE in address.protocols)
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Route &&
-          runtimeType == other.runtimeType &&
-          address == other.address &&
-          proxy == other.proxy &&
-          socketAddress == other.socketAddress;
-
-  @override
-  int get hashCode =>
-      address.hashCode ^ proxy.hashCode ^ socketAddress.hashCode;
-
   /// Returns a string with the URL hostname, socket IP address, and socket port, like one of these:
   ///
   ///  * `example.com:80 at 1.2.3.4:8888`

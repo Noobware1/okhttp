@@ -10,4 +10,5 @@ export 'src/byte_stream.dart';
 export 'src/proxy.dart';
 export 'src/auth.dart';
 export 'src/internet_socket_address.dart';
+export 'src/multipart_body.dart';
 export 'src/expections/okhttp_exception.dart';

@@ -8,15 +8,14 @@ import 'package:okhttp/src/interceptor.dart';
 import 'package:okhttp/src/response.dart';
 
 class Logger {
-  final DateFromat format;
+  static const _format = DateFromat('yyyy-MM-dd HH:mm:ss a');
   final Color color;
   const Logger({
     this.color = Color.green,
-    this.format = const DateFromat('yyyy-MM-dd HH:mm:ss a'),
   });
 
   void log(Object? obj) {
-    _print(DateFormatter(DateTime.now()).format(format));
+    _print(DateFormatter(DateTime.now()).format(_format));
     _print('INFO: ${obj.toString()}');
   }
 
