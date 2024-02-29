@@ -10,7 +10,7 @@ void main() {
 
   // Create a multipart request body with form parameters and a file
   final requestBody = MultipartBody.Builder()
-      .setType(MultipartBody.FORM)
+      .setType(RequestBodyTypes.MULTIPART_FORM)
       .addFormDataPart("param1", "value1")
       .addFormDataPart("param2", "value2")
       .build();

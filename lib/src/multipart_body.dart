@@ -137,30 +137,6 @@ class MultipartBody extends RequestBody {
 
     return byteCount;
   }
-
-  /// The "mixed" subtype of "multipart" is intended for use when the body parts are independent
-  /// and need to be bundled in a particular order. Any "multipart" subtypes that an implementation
-  /// does not recognize must be treated as being of subtype "mixed".
-  static final MediaType MIXED = "multipart/mixed".toMediaType();
-
-  /// The "multipart/alternative" type is syntactically identical to "multipart/mixed", but the
-  /// semantics are different. In particular, each of the body parts is an "alternative" version of
-  /// the same information.
-  static final MediaType ALTERNATIVE = "multipart/alternative".toMediaType();
-
-  /// This type is syntactically identical to "multipart/mixed", but the semantics are different.
-  /// In particular, in a digest, the default `Content-Type` value for a body part is changed from
-  /// "text/plain" to "message/rfc822".
-  static final MediaType DIGEST = "multipart/digest".toMediaType();
-
-  /// This type is syntactically identical to "multipart/mixed", but the semantics are different.
-  /// In particular, in a parallel entity, the order of body parts is not significant.
-  static final MediaType PARALLEL = "multipart/parallel".toMediaType();
-
-  /// The media-type multipart/form-data follows the rules of all multipart MIME data streams as
-  /// outlined in RFC 2046. In forms, there are a series of fields to be supplied by the user who
-  /// fills out the form. Each field has a name. Within a given form, the names are unique.
-  static final MediaType FORM = "multipart/form-data".toMediaType();
 }
 
 class Part {
@@ -215,7 +191,7 @@ sealed class MultipartBodyBuilder {
   }
 
   late final String _boundary;
-  MediaType _type = MultipartBody.MIXED;
+  MediaType _type = RequestBodyTypes.MULTIPART_MIXED;
   final List<Part> _parts = [];
 
   /// Set the MIME type. Expected values for `type` are [MIXED] (the default), [ALTERNATIVE],

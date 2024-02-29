@@ -87,7 +87,7 @@ class DnsOverHttps extends Dns {
       try {
         final response = await call.execute();
         _processResponse(response, hostname, responses, failures);
-      } catch (e, s) {
+      } catch (e) {
         failures.add(e is Exception ? e : Exception(e.toString()));
       }
     }

@@ -106,11 +106,3 @@ extension on InternetAddress? {
     return "${this!.host}/${this!.address}";
   }
 }
-
-// void main(List<String> args) async {
-//   // var a = await InternetAddress.lookup('cr-unblocker.us.to',
-//   //     type: InternetAddressType.IPv4);
-//   final b = await InternetSocketAddress.fromHost('cr-unblocker.us.to', 1080);
-
-//   print(b.toString());
-// }
