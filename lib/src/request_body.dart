@@ -18,7 +18,7 @@ abstract class RequestBody {
   factory RequestBody.fromString(String content, [MediaType? contentType]) =>
       _fromString(content, contentType);
 
-  factory RequestBody.fromMap(Map<String, String> map,
+  factory RequestBody.fromMap(Map<String, dynamic> map,
           [MediaType? contentType]) =>
       _fromMap(map, contentType);
 

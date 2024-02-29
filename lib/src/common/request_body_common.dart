@@ -46,7 +46,7 @@ RequestBody _fromString(String content, [MediaType? contentType]) {
   return _BytesBody(charSet.encode(content), finalContentType);
 }
 
-RequestBody _fromMap(Map<String, String> map, [MediaType? contentType]) {
+RequestBody _fromMap(Map<String, dynamic> map, [MediaType? contentType]) {
   final (charSet, finalContentType) = contentType.resloveWithCharSet();
   return _BytesBody(charSet.encode(jsonEncode(map)), finalContentType);
 }
