@@ -191,7 +191,7 @@ sealed class MultipartBodyBuilder {
   }
 
   late final String _boundary;
-  MediaType _type = RequestBodyTypes.MULTIPART_MIXED;
+  MediaType _type = RequestBodyType.MULTIPART_MIXED;
   final List<Part> _parts = [];
 
   /// Set the MIME type. Expected values for `type` are [MIXED] (the default), [ALTERNATIVE],

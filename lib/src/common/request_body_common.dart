@@ -1,6 +1,6 @@
 part of 'package:okhttp/src/request_body.dart';
 
-abstract class RequestBodyTypes {
+abstract class RequestBodyType {
   static final MediaType BINARY = 'application/octet-stream'.toMediaType();
 
   static final MediaType TEXT = 'text/plain'.toMediaType();

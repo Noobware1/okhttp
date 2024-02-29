@@ -8,7 +8,7 @@ void main(List<String> args) {
       'title': 'foo',
       'body': 'bar',
     },
-    RequestBodyTypes.JSON,
+    RequestBodyType.JSON,
   );
 
   final request = Request.Builder()
