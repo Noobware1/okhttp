@@ -92,7 +92,7 @@ extension on Headers {
 
   int get commonLength =>
       _nameAndValues.values.fold(0, (previousValue, element) {
-        return previousValue + element.length;
+        return previousValue + 1;
       });
 
   /// Returns the last value corresponding to the specified field parsed as an HTTP date, or null if either the field is absent or cannot be parsed as a date.
