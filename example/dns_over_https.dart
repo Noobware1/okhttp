@@ -22,9 +22,15 @@ void main(List<String> args) async {
 
   client = client.newBuilder().dns(dns).build();
 
-  final request = Request.Builder().url("https://www.google.com").build();
+  final request = Request.Builder()
+      .url("https://flixhq.to/home")
+      .addHeader("User-Agent",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0")
+      .build();
 
   final response = await client.newCall(request).execute();
+
+  print(response.statusCode);
 
   print(response.body.string);
 }

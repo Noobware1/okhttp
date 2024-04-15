@@ -1,4 +1,5 @@
 import 'package:async/async.dart';
+import 'package:okhttp/interceptor.dart';
 import 'package:okhttp/src/call.dart';
 import 'package:okhttp/src/connection/real_chain.dart';
 import 'package:okhttp/src/expections/okhttp_exception.dart';
@@ -23,7 +24,7 @@ class RealCall implements Call {
 
     interceptors.addAll(client.interceptors);
     interceptors.add(ResponseBodyInterceptor());
-    // interceptors.add(RetryAndFollowUpInterceptor(client));
+    interceptors.add(RetryAndFollowUpInterceptor(client));
     interceptors.add(BridgeInterceptor(client.cookieJar));
     interceptors.addAll(client.networkInterceptors);
     interceptors.add(ConnectInterceptor());
@@ -48,6 +49,10 @@ class RealCall implements Call {
         uri: null,
       );
     }
+  }
+
+  bool retryAfterFailure() {
+    return true;
   }
 
   @override

@@ -47,6 +47,8 @@ class OkHttpClient {
   /// The default value is 5.
   final int maxRedirects;
 
+  final int maxRetries;
+
   OkHttpClient()
       : interceptors = List.unmodifiable([]),
         networkInterceptors = List.unmodifiable([]),
@@ -61,6 +63,7 @@ class OkHttpClient {
         closeResponseBody = true,
         followRedirects = true,
         maxRedirects = 5,
+        maxRetries = 0,
         proxy = Proxy.NO_PROXY,
         dns = Dns.SYSTEM,
         adapter = HttpClientAdapter(),
@@ -80,6 +83,7 @@ class OkHttpClient {
         persistentConnection = builder._persistentConnection,
         followRedirects = builder._followRedirects,
         maxRedirects = builder._maxRedirects,
+        maxRetries = builder._maxRetries,
         proxy = builder._proxy,
         dns = builder._dns,
         adapter = builder._adapter,
@@ -121,6 +125,7 @@ sealed class OkHttpClientBuilder {
   bool _followRedirects;
   bool _closeResponseBody;
   int _maxRedirects;
+  int _maxRetries;
   ClientAdapter _adapter;
   Proxy _proxy;
   Dns _dns;
@@ -138,6 +143,7 @@ sealed class OkHttpClientBuilder {
         _persistentConnection = client.persistentConnection,
         _followRedirects = client.followRedirects,
         _maxRedirects = client.maxRedirects,
+        _maxRetries = client.maxRetries,
         _proxy = client.proxy,
         _dns = client.dns,
         _cookieJar = client.cookieJar,
@@ -233,6 +239,12 @@ sealed class OkHttpClientBuilder {
   OkHttpClientBuilder maxRedirects(int maxRedirects) {
     return apply((it) {
       it._maxRedirects = maxRedirects;
+    });
+  }
+
+  OkHttpClientBuilder maxRetries(int maxRetries) {
+    return apply((it) {
+      it._maxRetries = maxRetries;
     });
   }
 

@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_initializing_formals
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:okhttp/src/exchange/exchnage_codec.dart';
 import 'package:okhttp/src/exchange/http/http_carrier.dart';
