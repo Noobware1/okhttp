@@ -24,16 +24,15 @@ class Proxy {
   final InternetSocketAddress? _sa;
   final PasswordAuthentication? _auth;
 
-  /// A proxy setting that represents a {@code DIRECT} connection,
+  /// A proxy setting that represents a DIRECT connection,
   /// basically telling the protocol handler not to use any proxying.
   /// Used, for instance, to create sockets bypassing any other global
   /// proxy settings (like SOCKS):
   /// <P>
-  /// {@code Socket s = new Socket(Proxy.NO_PROXY);}
   ///
   static const Proxy NO_PROXY = Proxy();
 
-  // Creates the proxy that represents a {@code DIRECT} connection.
+  // Creates the proxy that represents a DIRECT connection.
   const Proxy(
       {ProxyType? type,
       InternetSocketAddress? sa,

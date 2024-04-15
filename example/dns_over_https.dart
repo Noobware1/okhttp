@@ -19,14 +19,12 @@ void main(List<String> args) async {
         getByIp("2606:4700:4700::6400"),
       ]))
       .build();
-  // print(await dns.lookup("www.google.com"));
 
-  final response = await client
-      .newCall(Request.Builder()
-          .url(Uri.parse("https://www.google.com")
-              .replace(host: "142.250.193.4"))
-          .build())
-      .execute();
+  client = client.newBuilder().dns(dns).build();
+
+  final request = Request.Builder().url("https://www.google.com").build();
+
+  final response = await client.newCall(request).execute();
 
   print(response.body.string);
 }

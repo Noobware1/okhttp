@@ -25,7 +25,7 @@ class HttpClientAdapter implements ClientAdapter {
     httpClientRequest.maxRedirects = client.maxRedirects;
     httpClientRequest.persistentConnection = client.persistentConnection;
 
-    addProxy(client.proxy);
+    await addProxy(client, client.proxy);
 
     //sets headers
     request.headers.forEach((name, value) {
@@ -67,7 +67,7 @@ class HttpClientAdapter implements ClientAdapter {
     _inner.close(force: force);
   }
 
-  void addProxy(Proxy proxy) {
+  Future<void> addProxy(OkHttpClient client, Proxy proxy) async {
     if (proxy == Proxy.NO_PROXY) return;
     if (proxy.type == ProxyType.SOCKS) {
       SocksTCPClient.assignToHttpClient(_inner, [proxy.toProxySettings()]);
@@ -84,9 +84,10 @@ class HttpClientAdapter implements ClientAdapter {
         };
       }
     }
-    if (proxy.type == ProxyType.DIRECT) {
+    if (proxy.type == ProxyType.DIRECT && client.dns != Dns.SYSTEM) {
+      final address = (await client.dns.lookup(proxy.address!.hostName)).first;
       _inner.findProxy = (uri) {
-        return 'DIRECT ${proxy.address!}:${proxy.address!.port}';
+        return 'DIRECT ${address.address}:${proxy.address?.port ?? 443}';
       };
     }
   }
